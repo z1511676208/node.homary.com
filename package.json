@@ -16,10 +16,17 @@
   "author": "bobobo",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.21.4",
+    "canvas": "2.7.0",
+    "download": "^8.0.0",
+    "form-data": "^4.0.0",
+    "gif-encoder-2": "^1.0.5",
     "koa": "^2.13.1",
     "koa-bodyparser": "^4.3.0",
     "koa-router": "^10.1.1",
-    "nodemon": "^2.0.12"
+    "koa2-cors": "^2.0.6",
+    "nodemon": "^2.0.12",
+    "sharp": "0.26.2"
   },
   "devDependencies": {
     "eslint": "^7.32.0",
