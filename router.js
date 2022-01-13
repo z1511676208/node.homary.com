@@ -17,32 +17,33 @@ router.get('/', async (ctx) => {
   };
 });
 router.get('/video', async (ctx) => {
-  await extractFrames({
-    input: 'https://img2.homary.com/mall/file/2021/12/10/769cc74c86b44b769c93432ab053076c.mp4',
-    output: './upload/shot-%i.jpg',
-    offsets: [
-      1000,
-      5000,
-      8000,
-      12000
-    ]
-  })
-  let commend = ffmpeg('./upload/shot-%d.jpg')
-    .inputOptions([
-      '-r 1'
-    ])
-    .on('start', (str) => { console.log('转换任务开始~', str) })
-    .on('progress', (progress) => { console.log('进行中，完成' + progress.frames + '%'); })
-    .on('end', (str) => {
-      // fs.rmdirSync('./upload');
-      console.log('转换任务完成!', str)
+  try {
+    await extractFrames({
+      input: 'https://img2.homary.com/mall/file/2021/12/10/769cc74c86b44b769c93432ab053076c.mp4',
+      output: './upload/shot-%d.jpg',
+      fps: 1
     })
-    .save('./gifs/test12.gif');
+    await ffmpeg('https://img2.homary.com/mall/file/2021/12/10/769cc74c86b44b769c93432ab053076c.mp4')
+      .size('640x?')
+      .aspect('4:3')
+      .on('start', (str) => { console.log('转换任务开始~', str) })
+      .on('progress', (progress) => { console.log('进行中，完成' + progress.frames / 4 * 100 + '%'); })
+      .on('end', (str) => {
+        // fs.rmdirSync('./upload');
+        console.log('转换任务完成!', str)
+        // 读取本地数据转换buffer
+        // fs.readFile('./gifs/test12.gif', (err, origin_buffer) => {
+        //   if (!err) {
+        //     console.log(origin_buffer)
+        //   }
+        // })
+      })
+      .save('./gifs/test12.gif');
+    ctx.success(200);
+  } catch {
+    ctx.fail('处理异常', 2003);
+  }
 
-  ctx.body = {
-    name: 'Hello BM',
-    progress
-  };
 });
 // 合成图片处理
 router.post('/composite-image', async (ctx) => {

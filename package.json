@@ -23,6 +23,8 @@
     "fluent-ffmpeg": "^2.1.2",
     "form-data": "^4.0.0",
     "gif-encoder-2": "^1.0.5",
+    "imagemin": "^8.0.1",
+    "imagemin-pngquant": "^9.0.2",
     "koa": "^2.13.1",
     "koa-bodyparser": "^4.3.0",
     "koa-router": "^10.1.1",
