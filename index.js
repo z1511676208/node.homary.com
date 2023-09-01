@@ -1,3 +1,10 @@
+/*
+ * @Author       : JHao
+ * @Date         : 2022-02-17 14:46:39
+ * @LastEditors  : JHao
+ * @LastEditTime : 2023-08-31 16:40:41
+ */
+require('module-alias/register')
 const Koa = require('koa');
 const cors = require('koa2-cors');
 

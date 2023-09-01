@@ -1,15 +1,20 @@
+/*
+ * @Author       : JHao
+ * @Date         : 2023-08-31 14:22:43
+ * @LastEditors  : JHao
+ * @LastEditTime : 2023-08-31 15:02:04
+ */
 module.exports = {
+  extends: ['eslint:recommended', 'prettier'],
   env: {
-    browser: true,
-    commonjs: true,
-    es2021: true,
+    node: true,
+    es6: true
   },
-  extends: [
-    'airbnb-base',
-  ],
+  globals: {},
+  rules: {},
+  parser: "@babel/eslint-parser",
   parserOptions: {
-    ecmaVersion: 12,
-  },
-  rules: {
+    sourceType: 'module',
+    ecmaVersion: "latest"
   },
 };

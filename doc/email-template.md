@@ -1,0 +1,125 @@
+## 合成图片
+```
+GET    https://node.internal.homary.com/email/screenshot
+```
+### 请求参数
+|参数名|说明|是否必填
+|---|---|:---:
+|url|截图网址|必填
+{
+    "url":"https://m.homary.com/category/tv-stands-21.html"
+}
+
+### 注册成功返回数据
+```json
+{
+    "code":200,
+    "data":{
+        ".new-category-template":{
+            "img":"https://img5.su-cdn.com/common/2023/09/01/da94f59e3eaec02410cb07ffd5288e7b.png",
+            "link":null,
+            "id":"62e8f52c-918b-41db-882c-11841a87d232"
+        },
+        ".product-item-box":{
+            "children":[
+                {
+                    "img":"https://img5.su-cdn.com/common/2023/09/01/2fa02c1e297dc1fbf14c93d13ae237cb.png",
+                    "link":null,
+                    "id":"371cba80-9d1d-4d5f-8d06-b69084fd6ff0"
+                },
+                {
+                    "img":"https://img5.su-cdn.com/common/2023/09/01/5ce4759f8612bff7a6ec1083ec43a899.png",
+                    "link":null,
+                    "id":"2ef865aa-0207-480c-a7e2-d3c4919d33a3"
+                },
+                {
+                    "img":"https://img5.su-cdn.com/common/2023/09/01/bcff0ce555993be0ab832cac807a4fe0.png",
+                    "link":null,
+                    "id":"f52b2abd-c8e9-4aaf-83cf-f523d5a95217"
+                },
+                {
+                    "img":"https://img5.su-cdn.com/common/2023/09/01/cf8a29272019e3cbf9ab9ac8c4dbb779.png",
+                    "link":null,
+                    "id":"b0099ada-f67e-456f-beb8-7b6ef871fe69"
+                },
+                {
+                    "img":"https://img5.su-cdn.com/common/2023/09/01/bf70d78ae5e35bf88d4e711afad2ad58.png",
+                    "link":null,
+                    "id":"8ac2c095-19bd-43d5-8d95-b2544dc3d779"
+                },
+                {
+                    "img":"https://img5.su-cdn.com/common/2023/09/01/3250a4807f9f42282b699683ec882342.png",
+                    "link":null,
+                    "id":"0021d447-15e0-431f-ae36-c75afdff4eda"
+                },
+                {
+                    "img":"https://img5.su-cdn.com/common/2023/09/01/d45e8d7d9ced51aed83103e5d05ca0b3.png",
+                    "link":null,
+                    "id":"68f562e3-cf14-4e2a-8c17-b8eb0d1a2585"
+                },
+                {
+                    "img":"https://img5.su-cdn.com/common/2023/09/01/d08c46667d0b19057027464e11a1b919.png",
+                    "link":null,
+                    "id":"42dd8154-b2b8-4f66-8147-8e72ceea5fce"
+                },
+                {
+                    "img":"https://img5.su-cdn.com/common/2023/09/01/ac914d08c0c079b07c666897237e2983.png",
+                    "link":null,
+                    "id":"52b4ed40-a6fb-496f-ad5b-2e1f790501c4"
+                },
+                {
+                    "img":"https://img5.su-cdn.com/common/2023/09/01/3c4bfcbd5dcd775c9c9ea61b15a2eddb.png",
+                    "link":null,
+                    "id":"9017044e-da6c-4d48-b1c2-b10b8282ecc9"
+                },
+                {
+                    "img":"https://img5.su-cdn.com/common/2023/09/01/66accd1e9c3d942edd4f0c8887ddfc3c.png",
+                    "link":null,
+                    "id":"5c39bfa8-9383-4289-a154-cfd327eedec4"
+                },
+                {
+                    "img":"https://img5.su-cdn.com/common/2023/09/01/8f958c683d84f6523a2dd9c89c0003f8.png",
+                    "link":null,
+                    "id":"eafd32df-cdd9-4e00-a8b1-2351e2636a6a"
+                },
+                {
+                    "img":"https://img5.su-cdn.com/common/2023/09/01/df5d35f50a92389fae8365a5d5567c5d.png",
+                    "link":null,
+                    "id":"7ae7f368-5698-4957-9cbb-88de7c567143"
+                },
+                {
+                    "img":"https://img5.su-cdn.com/common/2023/09/01/afef1b1ee95997dd5cf03d9a3e729c2a.png",
+                    "link":null,
+                    "id":"1ebfefa6-df4b-4a07-97fa-931020474052"
+                },
+                {
+                    "img":"https://img5.su-cdn.com/common/2023/09/01/60d5f0ff6a1d4c4409151fc4936a14ac.png",
+                    "link":null,
+                    "id":"7a836041-8baf-4f9c-8848-05a06c791175"
+                },
+                {
+                    "img":"https://img5.su-cdn.com/common/2023/09/01/2bc3236c0839fe7c38f4debb6ad5cfca.png",
+                    "link":null,
+                    "id":"99aac42f-bebb-4c90-8edc-dd8fac903691"
+                },
+                {
+                    "img":"https://img5.su-cdn.com/common/2023/09/01/3e10a1b206409adc6d366ab1874c4e56.png",
+                    "link":null,
+                    "id":"3e87e1d0-10ca-48c3-a62b-65bd1fd4ba8e"
+                },
+                {
+                    "img":"https://img5.su-cdn.com/common/2023/09/01/6b5943e49dc970d6489edf8f8e64421b.png",
+                    "link":null,
+                    "id":"8c234f57-d2b8-4935-9dda-5b05558089cd"
+                },
+                {
+                    "img":"https://img5.su-cdn.com/common/2023/09/01/87d438577d5661eda137cc00c7b3a03d.png",
+                    "link":null,
+                    "id":"5c5512d0-1ee7-4fdb-b4ab-1fa4a0230919"
+                }
+            ]
+        }
+    },
+    "info":"ok"
+}
+```
