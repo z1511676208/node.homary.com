@@ -2,7 +2,7 @@
  * @Author       : JHao
  * @Date         : 2023-08-31 15:13:28
  * @LastEditors  : JHao
- * @LastEditTime : 2023-09-06 11:31:52
+ * @LastEditTime : 2023-09-07 18:42:38
  */
 const puppeteer = require('puppeteer');
 const { STATUS_CODE } = require('@/lib/constant');
@@ -243,7 +243,7 @@ async function getPageScreenshot(url = '') {
     });
     console.timeEnd(`访问页面 ${url}`)
     console.time('#email-template 渲染完成')
-    await page.waitForSelector('#email-template')
+    await page.waitForSelector('#email-template', { timeout: 0 })
     console.timeEnd('#email-template 渲染完成')
     // 滚动页面 避免懒加载 导致截图错误
     console.time('滚动页面到底部')
