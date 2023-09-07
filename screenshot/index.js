@@ -243,7 +243,7 @@ async function getPageScreenshot(url = '') {
     });
     console.timeEnd(`访问页面 ${url}`)
     console.time('#email-template 渲染完成')
-    await page.waitForSelector('#email-template', { timeout: 0 })
+    await page.waitForSelector('#email-template')
     console.timeEnd('#email-template 渲染完成')
     // 滚动页面 避免懒加载 导致截图错误
     console.time('滚动页面到底部')
@@ -278,7 +278,7 @@ async function getPageScreenshot(url = '') {
     await browser.close();
     return { code: STATUS_CODE.SUSCCESS, data: imagesListMap }
   } catch (error) {
-    console.log('Error => ', error)
+    console.log('Error => ', error, url)
     return new Result(STATUS_CODE.ABNORMAL).handle();
   }
 }
