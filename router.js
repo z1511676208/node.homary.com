@@ -2,7 +2,7 @@
  * @Author       : JHao
  * @Date         : 2023-08-31 15:03:56
  * @LastEditors  : JHao
- * @LastEditTime : 2023-09-05 18:11:44
+ * @LastEditTime : 2023-09-08 10:27:08
  */
 const Router = require('koa-router');
 const axios = require('axios');
@@ -10,7 +10,7 @@ const axios = require('axios');
 const { STATUS_CODE } = require('./lib/constant');
 const { Result } = require('./lib/util');
 // const { uploadFile } = require('./request/api/upload');
-const { getPageScreenshot } = require('./screenshot/index')
+const { getPageScreenshot, reportEmailError } = require('./screenshot/index')
 const { isObject } = require('./screenshot/utils')
 
 const router = new Router();
@@ -57,6 +57,7 @@ router.get('/email/screenshot', async (ctx) => {
   const params = ctx.query || ctx.request.query || {};
   if (!isObject(params) || !params?.url) {
     const { code, msg } = new Result(STATUS_CODE.DEFECT).handle();
+    reportEmailError('Url未入参', '', { code, msg })
     ctx.fail(msg, code);
     return;
   }
@@ -66,11 +67,12 @@ router.get('/email/screenshot', async (ctx) => {
     if (+result.code === STATUS_CODE.SUSCCESS) {
       ctx.success(result.data)
     } else {
-      ctx.fail(result.info, result.code);
+      ctx.fail(result.msg, result.code);
     }
 
   } catch (error) {
     const { code, msg } = new Result(STATUS_CODE.ABNORMAL).handle();
+    reportEmailError(error, params.url, { code, msg })
     ctx.fail(msg, code);
   }
 });

@@ -2,11 +2,12 @@
  * @Author       : JHao
  * @Date         : 2023-08-31 15:13:28
  * @LastEditors  : JHao
- * @LastEditTime : 2023-09-07 18:42:38
+ * @LastEditTime : 2023-09-08 10:29:19
  */
 const puppeteer = require('puppeteer');
 const { STATUS_CODE } = require('@/lib/constant');
 const { Result } = require('@/lib/util');
+const axios = require('axios');
 const {
   v4: uuid,
 } = require('uuid');
@@ -218,6 +219,20 @@ async function removeErrorData(data) {
   return data
 }
 
+// 报错上报预警群
+async function reportEmailError(error, url, res) {
+  const robot = {
+    "msgtype": 'markdown',
+    "markdown": {
+      "content":
+        `# 邮件截图Node服务异常: \n >**Error Message**: ${error.toString()} \n >**截图Url**: [${url}](${url}) \n >**Node接口返回信息**: ${JSON.stringify(res)}`
+    }
+  };
+  axios.post(
+    'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=00ede340-7181-4c38-a5eb-042a514483f8',
+    JSON.stringify(robot));
+}
+
 async function getPageScreenshot(url = '') {
   try {
     if (!url) {
@@ -279,9 +294,12 @@ async function getPageScreenshot(url = '') {
     return { code: STATUS_CODE.SUSCCESS, data: imagesListMap }
   } catch (error) {
     console.log('Error => ', error, url)
-    return new Result(STATUS_CODE.ABNORMAL).handle();
+    const res = { code: STATUS_CODE.CATCH, msg: error.toString() }
+    reportEmailError(error, url, res)
+    return res
   }
 }
 module.exports = {
   getPageScreenshot,
+  reportEmailError
 };
