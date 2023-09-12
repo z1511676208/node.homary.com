@@ -2,7 +2,7 @@
  * @Author       : JHao
  * @Date         : 2023-08-31 15:13:28
  * @LastEditors  : JHao
- * @LastEditTime : 2023-09-08 10:29:19
+ * @LastEditTime : 2023-09-12 10:43:51
  */
 const puppeteer = require('puppeteer');
 const { STATUS_CODE } = require('@/lib/constant');
@@ -234,23 +234,23 @@ async function reportEmailError(error, url, res) {
 }
 
 async function getPageScreenshot(url = '') {
+  if (!url) {
+    return new Result(STATUS_CODE.DEFECT).handle();
+  }
+  console.time('初始化puppeteer')
+  const browser = await puppeteer.launch({
+    headless: 'new',
+    defaultViewport: {
+      width: 650,
+      height: 3000
+    },
+    args: ['--no-sandbox']
+  });
+  const page = await browser.newPage();
+  await page.setDefaultNavigationTimeout(0);
+  // await page.emulate(iPhone);
+  console.timeEnd('初始化puppeteer')
   try {
-    if (!url) {
-      return new Result(STATUS_CODE.DEFECT).handle();
-    }
-    console.time('初始化puppeteer')
-    const browser = await puppeteer.launch({
-      headless: 'new',
-      defaultViewport: {
-        width: 650,
-        height: 3000
-      },
-      args: ['--no-sandbox']
-    });
-    const page = await browser.newPage();
-    await page.setDefaultNavigationTimeout(0);
-    // await page.emulate(iPhone);
-    console.timeEnd('初始化puppeteer')
     console.time(`访问页面 ${url}`)
     // await page.setUserAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1');
     await page.goto(url, {
@@ -258,7 +258,7 @@ async function getPageScreenshot(url = '') {
     });
     console.timeEnd(`访问页面 ${url}`)
     console.time('#email-template 渲染完成')
-    await page.waitForSelector('#email-template')
+    await page.waitForSelector('#email-template', { timeout: 10 * 1000 })
     console.timeEnd('#email-template 渲染完成')
     // 滚动页面 避免懒加载 导致截图错误
     console.time('滚动页面到底部')
@@ -293,6 +293,8 @@ async function getPageScreenshot(url = '') {
     await browser.close();
     return { code: STATUS_CODE.SUSCCESS, data: imagesListMap }
   } catch (error) {
+    await page.close();
+    await browser.close();
     console.log('Error => ', error, url)
     const res = { code: STATUS_CODE.CATCH, msg: error.toString() }
     reportEmailError(error, url, res)
