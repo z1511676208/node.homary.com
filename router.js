@@ -2,24 +2,24 @@
  * @Author       : JHao
  * @Date         : 2023-08-31 15:03:56
  * @LastEditors  : JHao
- * @LastEditTime : 2023-09-08 10:27:08
+ * @LastEditTime : 2024-01-16 15:07:30
  */
-const Router = require('koa-router');
-const axios = require('axios');
+const Router = require('koa-router')
+const axios = require('axios')
 // const { createGifOrPng, toFormData, isLegalParam } = require('./composite/util');
-const { STATUS_CODE } = require('./lib/constant');
-const { Result } = require('./lib/util');
+const { STATUS_CODE } = require('./lib/constant')
+const { Result } = require('./lib/util')
 // const { uploadFile } = require('./request/api/upload');
-const { getPageScreenshot, reportEmailError } = require('./screenshot/index')
+const { puppeteerInstance, reportEmailError } = require('./screenshot/index')
 const { isObject } = require('./screenshot/utils')
 
-const router = new Router();
+const router = new Router()
 
-router.get('/', async (ctx) => {
-  ctx.body = {
-    description: 'Node.js API from BMFE Team',
-  };
-});
+router.get('/', async ctx => {
+    ctx.body = {
+        description: 'Node.js API from BMFE Team'
+    }
+})
 // 合成图片处理
 // router.post('/composite-image', async (ctx) => {
 //   const postParam = ctx.request.body || {}; // 获取post提交的数据
@@ -53,28 +53,27 @@ router.get('/', async (ctx) => {
 // });
 
 // 截图
-router.get('/email/screenshot', async (ctx) => {
-  const params = ctx.query || ctx.request.query || {};
-  if (!isObject(params) || !params?.url) {
-    const { code, msg } = new Result(STATUS_CODE.DEFECT).handle();
-    reportEmailError('Url未入参', '', { code, msg })
-    ctx.fail(msg, code);
-    return;
-  }
-  try {
-    const url = decodeURIComponent(params.url)
-    const result = await getPageScreenshot(url)
-    if (+result.code === STATUS_CODE.SUSCCESS) {
-      ctx.success(result.data)
-    } else {
-      ctx.fail(result.msg, result.code);
+router.get('/email/screenshot', async ctx => {
+    const params = ctx.query || ctx.request.query || {}
+    if (!isObject(params) || !params?.url) {
+        const { code, msg } = new Result(STATUS_CODE.DEFECT).handle()
+        reportEmailError('Url未入参', '', { code, msg })
+        ctx.fail(msg, code)
+        return
     }
+    try {
+        const url = decodeURIComponent(params.url)
+        const result = await puppeteerInstance.getPageScreenshot(url)
+        if (+result.code === STATUS_CODE.SUSCCESS) {
+            ctx.success(result.data)
+        } else {
+            ctx.fail(result.msg, result.code)
+        }
+    } catch (error) {
+        const { code, msg } = new Result(STATUS_CODE.ABNORMAL).handle()
+        reportEmailError(error, params.url, { code, msg })
+        ctx.fail(msg, code)
+    }
+})
 
-  } catch (error) {
-    const { code, msg } = new Result(STATUS_CODE.ABNORMAL).handle();
-    reportEmailError(error, params.url, { code, msg })
-    ctx.fail(msg, code);
-  }
-});
-
-module.exports = router;
+module.exports = router
