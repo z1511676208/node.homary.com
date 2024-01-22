@@ -5,9 +5,9 @@
  * @LastEditTime : 2023-09-06 10:08:23
  */
 
-const fs = require('fs');
-const path = require('path');
-const FormData = require('form-data');
+const fs = require('fs')
+const path = require('path')
+const FormData = require('form-data')
 
 /**
  * 判断是否为对象
@@ -16,12 +16,12 @@ const FormData = require('form-data');
  * @returns {boolean}
  */
 const isObject = obj => {
-  const isObject = Object.prototype.toString.call(obj) === '[object Object]'
-  if (isObject) {
-    return Object.keys(obj).length > 0
-  }
+    const isObject = Object.prototype.toString.call(obj) === '[object Object]'
+    if (isObject) {
+        return Object.keys(obj).length > 0
+    }
 
-  return isObject
+    return isObject
 }
 /**
  * 判断是否为数组
@@ -29,28 +29,28 @@ const isObject = obj => {
  * @returns {boolean}
  */
 const isArray = arr => {
-  const isArray = Object.prototype.toString.call(arr) === '[object Array]'
-  if (isArray) {
-    return arr.length > 0
-  }
+    const isArray = Object.prototype.toString.call(arr) === '[object Array]'
+    if (isArray) {
+        return arr.length > 0
+    }
 
-  return isArray
+    return isArray
 }
 
-
-
 function deleteFolderRecursive(folderPath) {
-  if (fs.existsSync(folderPath)) {
-    fs.readdirSync(folderPath).forEach((file) => {
-      const curPath = path.join(folderPath, file);
-      if (fs.lstatSync(curPath).isDirectory()) { // 如果是目录，则递归删除
-        deleteFolderRecursive(curPath);
-      } else { // 如果是文件，则删除文件
-        fs.unlinkSync(curPath);
-      }
-    });
-    fs.rmdirSync(folderPath); // 删除空目录
-  }
+    if (fs.existsSync(folderPath)) {
+        fs.readdirSync(folderPath).forEach(file => {
+            const curPath = path.join(folderPath, file)
+            if (fs.lstatSync(curPath).isDirectory()) {
+                // 如果是目录，则递归删除
+                deleteFolderRecursive(curPath)
+            } else {
+                // 如果是文件，则删除文件
+                fs.unlinkSync(curPath)
+            }
+        })
+        fs.rmdirSync(folderPath) // 删除空目录
+    }
 }
 
 /**
@@ -61,26 +61,26 @@ function deleteFolderRecursive(folderPath) {
  * @returns {formData, headers}
  */
 async function toFormData(buffers, fileType = 1, savePath = '', dir = '') {
-  if (!buffers) return '';
-  const type = +fileType === 1 ? 'png' : 'gif';
-  const formData = new FormData();
-  // 转换成formData
-  formData.append('file_img', buffers, {
-    filename: `synthesis.${type}`,
-    contentType: `image/${type}`,
-  });
-  dir && formData.append('type', dir);
-  savePath && formData.append('save_path', savePath);
-  const headers = formData.getHeaders();
-  return {
-    formData,
-    headers,
-  };
+    if (!buffers) return ''
+    const type = +fileType === 1 ? 'png' : 'gif'
+    const formData = new FormData()
+    // 转换成formData
+    formData.append('file_img', buffers, {
+        filename: `synthesis.${type}`,
+        contentType: `image/${type}`
+    })
+    dir && formData.append('type', dir)
+    savePath && formData.append('save_path', savePath)
+    const headers = formData.getHeaders()
+    return {
+        formData,
+        headers
+    }
 }
 
 module.exports = {
-  isObject,
-  isArray,
-  deleteFolderRecursive,
-  toFormData
-};
+    isObject,
+    isArray,
+    deleteFolderRecursive,
+    toFormData
+}

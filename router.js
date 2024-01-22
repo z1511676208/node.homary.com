@@ -12,6 +12,7 @@ const { Result } = require('./lib/util')
 // const { uploadFile } = require('./request/api/upload');
 const { puppeteerInstance, reportEmailError } = require('./screenshot/index')
 const { isObject } = require('./screenshot/utils')
+const { handleCharts } = require('./linechart/index.js')
 
 const router = new Router()
 
@@ -72,6 +73,41 @@ router.get('/email/screenshot', async ctx => {
     } catch (error) {
         const { code, msg } = new Result(STATUS_CODE.ABNORMAL).handle()
         reportEmailError(error, params.url, { code, msg })
+        ctx.fail(msg, code)
+    }
+})
+
+// 生成echarts图
+router.get('/chart/linechart', async ctx => {
+    // ctx.query || ctx.request.query ||
+    // const params = { arr_list: [10, 22, 28, 23, 19], val: 20 }
+    // if (!isObject(params) || !isArray(params?.arr_list) || !params?.val) {
+    //     const { code, msg } = new Result(STATUS_CODE.DEFECT).handle()
+    //     ctx.fail(msg, code)
+    //     return
+    // }
+
+    const urlParams = ctx.query || ctx.request.query || {}
+    const params = urlParams?.option ? JSON.parse(decodeURIComponent(urlParams.option)) : {}
+    console.log(params)
+
+    if (!isObject(params)) {
+        const { code, msg } = new Result(STATUS_CODE.DEFECT).handle()
+        ctx.fail(msg, code)
+        return
+    }
+
+    try {
+        const result = await handleCharts(params)
+        if (+result.code === STATUS_CODE.SUSCCESS) {
+            ctx.type = 'image/png'
+            ctx.status = 200
+            ctx.body = result.data
+        } else {
+            ctx.fail(result.msg, result.code)
+        }
+    } catch (error) {
+        const { code, msg } = new Result(STATUS_CODE.ABNORMAL).handle()
         ctx.fail(msg, code)
     }
 })
