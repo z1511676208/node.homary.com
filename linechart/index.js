@@ -53,11 +53,17 @@ async function handleCharts(params) {
         return new Result(STATUS_CODE.DEFECT).handle()
     }
 
+    params.grid = {
+        left: '-20',
+        top: '30',
+        containLabel: true
+    }
+
     const res = await createImage({
         path: siblingDir + '/line.png',
         option: params,
-        width: 420,
-        height: 236
+        width: params?.width || 420,
+        height: params?.height || 236
     })
     console.log('生成charts成功', res)
     return { code: STATUS_CODE.SUSCCESS, data: res }
