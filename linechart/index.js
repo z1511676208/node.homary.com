@@ -13,9 +13,6 @@ const currentDir = __dirname
 // 计算同级目录的绝对路径
 const siblingDir = path.join(currentDir, '../static/images/charts')
 
-// 获取同级目录的绝对路径
-const absoluteSiblingDir = path.resolve(siblingDir)
-
 async function handleCharts(params) {
     // 创建特定长度的对照数组
     // const defaultList = [...Array(list.length)].map(x => val)
@@ -53,17 +50,35 @@ async function handleCharts(params) {
         return new Result(STATUS_CODE.DEFECT).handle()
     }
 
+    // 默认X轴 Y轴的宽高定位
+    let gridLeft = '-20'
+    let gridTop = '30'
+    let canvasWidth = params?.width || 420
+    let canvasHeight = params?.height || 236
+
+    if (params?.xAxis?.show) {
+        // 根据参数判断是否调整X轴
+        gridTop = '10'
+        canvasHeight = canvasHeight * 1.1
+    }
+    if (params?.yAxis?.show) {
+        // 根据参数判断是否调整Y轴
+        gridLeft = '10'
+        canvasWidth = canvasWidth * 1.1
+    }
+
+    // 调整图片在canvas中的定位
     params.grid = {
-        left: '-20',
-        top: '30',
+        left: gridLeft,
+        top: gridTop,
         containLabel: true
     }
 
     const res = await createImage({
         path: siblingDir + '/line.png',
         option: params,
-        width: params?.width || 420,
-        height: params?.height || 236
+        width: canvasWidth,
+        height: canvasHeight
     })
     console.log('生成charts成功', res)
     return { code: STATUS_CODE.SUSCCESS, data: res }
@@ -100,9 +115,6 @@ function createImage(config) {
             return new Promise(resolve => {
                 setTimeout(async () => {
                     resolve(fs.readFileSync(config.path))
-                    // 图片上传完毕 移除目录以及目录下的图片
-                    fs.unlinkSync(absoluteSiblingDir + '/line.png')
-                    console.log('删除原文件成功')
                 }, 0)
             })
         } catch (err) {
