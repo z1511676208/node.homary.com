@@ -1,6 +1,6 @@
 const { STATUS_CODE } = require('@/lib/constant')
 const { Result } = require('@/lib/util')
-const { isObject } = require('@/screenshot/utils')
+const { isObject } = require('@/service/screenshot/utils')
 const echarts = require('echarts')
 const { createCanvas } = require('canvas')
 const fs = require('fs')
@@ -11,41 +11,9 @@ const { parseFile } = require('./utlis.js')
 const currentDir = __dirname
 
 // 计算同级目录的绝对路径
-const siblingDir = path.join(currentDir, '../static/images/charts')
+const siblingDir = path.join(currentDir, '../../static/images/charts')
 
 async function handleCharts(params) {
-    // 创建特定长度的对照数组
-    // const defaultList = [...Array(list.length)].map(x => val)
-
-    // if (!isArray(list) && !isArray(defaultList)) {
-    //     return new Result(STATUS_CODE.DEFECT).handle()
-    // }
-
-    // let option
-    // option = {
-    //     xAxis: {
-    //         data: ['A', 'B', 'C', 'D', 'E']
-    //     },
-    //     yAxis: {},
-    //     series: [
-    //         {
-    //             data: list,
-    //             type: 'line',
-    //             label: {
-    //                 show: true,
-    //                 position: 'bottom',
-    //                 textStyle: {
-    //                     fontSize: 20
-    //                 }
-    //             }
-    //         },
-    //         {
-    //             data: defaultList,
-    //             type: 'line'
-    //         }
-    //     ]
-    // }
-
     if (!isObject(params)) {
         return new Result(STATUS_CODE.DEFECT).handle()
     }

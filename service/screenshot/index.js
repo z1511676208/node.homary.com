@@ -19,7 +19,7 @@ const { isArray, isObject, deleteFolderRecursive, toFormData } = require('./util
 const currentDir = __dirname
 
 // 计算同级目录的绝对路径
-const siblingDir = path.join(currentDir, '../static/images')
+const siblingDir = path.join(currentDir, '../../static/images')
 
 // 获取同级目录的绝对路径
 const absoluteSiblingDir = path.resolve(siblingDir)
