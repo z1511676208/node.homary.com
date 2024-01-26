@@ -83,8 +83,9 @@ function createImage(config) {
                 chart.dispose()
             }
             return new Promise(resolve => {
-                resolve(fs.readFileSync(config.path))
+                const fileData = fs.readFileSync(config.path)
                 fs.unlinkSync(absoluteSiblingDir + '/line.png')
+                resolve(fileData)
                 console.log('删除原文件成功')
             })
         } catch (err) {
