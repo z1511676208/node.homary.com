@@ -12,6 +12,8 @@ const currentDir = __dirname
 
 // 计算同级目录的绝对路径
 const siblingDir = path.join(currentDir, '../../static/images/charts')
+// 获取同级目录的绝对路径
+const absoluteSiblingDir = path.resolve(siblingDir)
 
 async function handleCharts(params) {
     if (!isObject(params)) {
@@ -81,9 +83,9 @@ function createImage(config) {
                 chart.dispose()
             }
             return new Promise(resolve => {
-                setTimeout(async () => {
-                    resolve(fs.readFileSync(config.path))
-                }, 0)
+                resolve(fs.readFileSync(config.path))
+                fs.unlinkSync(absoluteSiblingDir + '/line.png')
+                console.log('删除原文件成功')
             })
         } catch (err) {
             console.error('Error: Write File failed' + err.message)

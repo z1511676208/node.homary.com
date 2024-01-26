@@ -68,7 +68,7 @@ router.get('/chart/linechart/:rid/:option', async ctx => {
         }
     }
 
-    console.log('optionsBase64 base64Params', base64Params)
+    console.log('optionsBase64 base64Params', JSON.stringify(base64Params))
 
     if (!isObject(base64Params)) {
         const { code, msg } = new Result(STATUS_CODE.DEFECT).handle()
