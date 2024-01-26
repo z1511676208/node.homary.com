@@ -76,17 +76,8 @@ router.get('/email/screenshot', async ctx => {
         ctx.fail(msg, code)
     }
 })
-
 // 生成echarts图
 router.get('/chart/linechart', async ctx => {
-    // ctx.query || ctx.request.query ||
-    // const params = { arr_list: [10, 22, 28, 23, 19], val: 20 }
-    // if (!isObject(params) || !isArray(params?.arr_list) || !params?.val) {
-    //     const { code, msg } = new Result(STATUS_CODE.DEFECT).handle()
-    //     ctx.fail(msg, code)
-    //     return
-    // }
-
     const urlParams = ctx.query || ctx.request.query || {}
     const params = urlParams?.option ? JSON.parse(decodeURIComponent(urlParams.option)) : {}
     console.log(params)
@@ -99,6 +90,49 @@ router.get('/chart/linechart', async ctx => {
 
     try {
         const result = await handleCharts(params)
+        if (+result.code === STATUS_CODE.SUSCCESS) {
+            ctx.type = 'image/png'
+            ctx.status = 200
+            ctx.body = result.data
+        } else {
+            ctx.fail(result.msg, result.code)
+        }
+    } catch (error) {
+        const { code, msg } = new Result(STATUS_CODE.ABNORMAL).handle()
+        ctx.fail(msg, code)
+    }
+})
+
+// 生成echarts图
+router.get('/chart/linechart/:option', async ctx => {
+    const optionParams = ctx.params.option || ''
+    let base64Params = ''
+    if(optionParams && typeof optionParams === 'string') {
+        const regex = /\.png$/;
+        let base64Str = optionParams
+        if (regex.test(optionParams)) {
+            base64Str = optionParams.split('.png')[0]
+        }
+        if (base64Str) {
+            try {
+                const buff = Buffer.from(base64Str, 'base64');
+                base64Params = JSON.parse(buff.toString('utf-8'))
+            }catch (e) {
+                console.log('optionsBase64', e)
+            }
+        }
+    }
+
+    console.log('optionsBase64 base64Params', base64Params)
+
+    if (!isObject(base64Params)) {
+        const { code, msg } = new Result(STATUS_CODE.DEFECT).handle()
+        ctx.fail(msg, code)
+        return
+    }
+
+    try {
+        const result = await handleCharts(base64Params)
         if (+result.code === STATUS_CODE.SUSCCESS) {
             ctx.type = 'image/png'
             ctx.status = 200
