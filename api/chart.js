@@ -41,10 +41,17 @@ router.get('/chart/linechart', async ctx => {
 })
 
 
-// 生成echarts图
-router.get('/chart/linechart/:option', async ctx => {
+/**
+ * 生成echarts图
+ * rid 随机ID
+ * option echarts options
+ */
+router.get('/chart/linechart/:rid/:option', async ctx => {
+    const paramRId = ctx.params.rid || ''
     const optionParams = ctx.params.option || ''
     let base64Params = ''
+    console.log('paramRId', paramRId)
+    console.log('optionParams', optionParams)
     if(optionParams && typeof optionParams === 'string') {
         const regex = /\.png$/;
         let base64Str = optionParams
