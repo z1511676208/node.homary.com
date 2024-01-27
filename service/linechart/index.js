@@ -6,6 +6,7 @@ const { createCanvas } = require('canvas')
 const fs = require('fs')
 const path = require('path')
 const { parseFile } = require('./utlis.js')
+const { createMD5Hash } = require("../../lib/crypto");
 
 // 获取当前文件所在目录的绝对路径
 const currentDir = __dirname
@@ -44,17 +45,31 @@ async function handleCharts(params) {
         containLabel: true
     }
 
+    let md5HashPath = ''
+    const randomNumber = Math.floor(Math.random() * 10 * 1024)
+    try {
+        md5HashPath = createMD5Hash(JSON.stringify(params) + randomNumber)
+    } catch (e) {
+       console.log('chartsImgUrl err', e)
+    }
+
+    let chartsImgUrl = siblingDir + '/' + (md5HashPath || randomNumber) + '.png'
+    console.log('chartsImgUrl', chartsImgUrl)
+
     const res = await createImage({
-        path: siblingDir + '/line.png',
+        path: chartsImgUrl,
         option: params,
         width: canvasWidth,
         height: canvasHeight
-    })
-    console.log('生成charts成功', res)
-    return { code: STATUS_CODE.SUSCCESS, data: res }
+    }, chartsImgUrl)
+    console.log('生成charts成功')
+    return {
+        code: STATUS_CODE.SUSCCESS,
+        data: res
+    }
 }
 
-function createImage(config) {
+function createImage(config, chartsImgUrl) {
     if (config.canvas) {
         Canvas = config.canvas
     }
@@ -84,9 +99,14 @@ function createImage(config) {
             }
             return new Promise(resolve => {
                 const fileData = fs.readFileSync(config.path)
-                fs.unlinkSync(absoluteSiblingDir + '/line.png')
-                resolve(fileData)
-                console.log('删除原文件成功')
+                try {
+                    fs.unlinkSync(chartsImgUrl)
+                    console.log('删除原文件成功', chartsImgUrl)
+                } catch (e) {
+                    console.log('删除原文件失败', e, chartsImgUrl)
+                } finally {
+                    resolve(fileData)
+                }
             })
         } catch (err) {
             console.error('Error: Write File failed' + err.message)

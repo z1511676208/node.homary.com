@@ -35,7 +35,8 @@ const apiDirectory = `${process.cwd()}/api`
 requireDirectory(module,  apiDirectory, { visit: (router) =>{
   if (router instanceof Router)
     app.use(router.routes()).use(router.allowedMethods());
-}});
+  }
+});
 
 
 let port = 3002

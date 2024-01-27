@@ -50,9 +50,10 @@ router.get('/chart/linechart/:rid/:option', async ctx => {
     const paramRId = ctx.params.rid || ''
     const optionParams = ctx.params.option || ''
     let base64Params = ''
-    console.log('paramRId', paramRId)
+
     console.log('optionParams', optionParams)
-    if(optionParams && typeof optionParams === 'string') {
+
+    if (optionParams && typeof optionParams === 'string') {
         const regex = /\.png$/;
         let base64Str = optionParams
         if (regex.test(optionParams)) {
@@ -62,7 +63,7 @@ router.get('/chart/linechart/:rid/:option', async ctx => {
             try {
                 const buff = Buffer.from(base64Str, 'base64');
                 base64Params = JSON.parse(buff.toString('utf-8'))
-            }catch (e) {
+            } catch (e) {
                 console.log('optionsBase64', e)
             }
         }

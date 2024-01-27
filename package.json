@@ -17,6 +17,7 @@
     "license": "ISC",
     "dependencies": {
         "axios": "^0.21.4",
+        "bcrypt": "^5.1.1",
         "canvas": "^2.11.2",
         "form-data": "^4.0.0",
         "koa": "^2.13.1",
