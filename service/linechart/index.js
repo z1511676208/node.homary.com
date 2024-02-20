@@ -6,7 +6,7 @@ const { createCanvas } = require('canvas')
 const fs = require('fs')
 const path = require('path')
 const { parseFile } = require('./utlis.js')
-const { createMD5Hash } = require("../../lib/crypto");
+const { createMD5Hash } = require('../../lib/crypto')
 
 // 获取当前文件所在目录的绝对路径
 const currentDir = __dirname
@@ -50,18 +50,21 @@ async function handleCharts(params) {
     try {
         md5HashPath = createMD5Hash(JSON.stringify(params) + randomNumber)
     } catch (e) {
-       console.log('chartsImgUrl err', e)
+        console.log('chartsImgUrl err', e)
     }
 
     let chartsImgUrl = siblingDir + '/' + (md5HashPath || randomNumber) + '.png'
     console.log('chartsImgUrl', chartsImgUrl)
 
-    const res = await createImage({
-        path: chartsImgUrl,
-        option: params,
-        width: canvasWidth,
-        height: canvasHeight
-    }, chartsImgUrl)
+    const res = await createImage(
+        {
+            path: chartsImgUrl,
+            option: params,
+            width: canvasWidth,
+            height: canvasHeight
+        },
+        chartsImgUrl
+    )
     console.log('生成charts成功')
     return {
         code: STATUS_CODE.SUSCCESS,
@@ -87,8 +90,15 @@ function createImage(config, chartsImgUrl) {
 
     config = Object.assign({}, config)
     config.option.animation = false
+    // 设置utf-8
+    // config.option.meta = { charset: 'utf-8' }
 
-    chart = echarts.init(createCanvas(parseInt(config.width, 10), parseInt(config.height, 10)))
+    chart = echarts.init(createCanvas(parseInt(config.width, 10), parseInt(config.height, 10)), null, {
+        meta: {
+            charset: 'utf-8' // 设置字符编码为 UTF-8
+        }
+    })
+    console.log(config.option, 'config.option')
     chart.setOption(config.option)
 
     if (config.path) {
