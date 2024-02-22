@@ -86,10 +86,14 @@ function createImage(config, chartsImgUrl) {
         Canvas = config.canvas
     }
 
-    let ctx = createCanvas(128, 128)
-    if (config.font) {
-        ctx.font = config.font
-    }
+    // 引入字体库
+    const notoSansTTF = path.join(currentDir, '../../assets/font/NotoSans.ttf')
+    const ctx = createCanvas(128, 128, {
+        beforeClone: origin => {
+            origin.registerFont(notoSansTTF, { family: 'NotoSans' }) // 替换 'My Font' 为您的字体家族名称
+        }
+    })
+    ctx.font = '12px NotoSans' // 设置字体大小和字体名称
 
     echarts.setCanvasCreator(function () {
         return ctx
@@ -99,14 +103,8 @@ function createImage(config, chartsImgUrl) {
 
     config = Object.assign({}, config)
     config.option.animation = false
-    // 设置utf-8
-    // config.option.meta = { charset: 'utf-8' }
 
-    chart = echarts.init(createCanvas(parseInt(config.width, 10), parseInt(config.height, 10)), null, {
-        meta: {
-            charset: 'utf-8' // 设置字符编码为 UTF-8
-        }
-    })
+    chart = echarts.init(createCanvas(parseInt(config.width, 10), parseInt(config.height, 10)))
     console.log(config.option, 'config.option')
     chart.setOption(config.option)
 
