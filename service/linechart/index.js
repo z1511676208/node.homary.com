@@ -38,6 +38,15 @@ async function handleCharts(params) {
         canvasWidth = canvasWidth * 1.1
     }
 
+    if (params?.graphic && Array.isArray(params?.graphic)) {
+        // 判断是否存在文案描述
+        const isText = params.graphic.findIndex(item => item.type === 'text')
+        if (isText !== -1) {
+            gridTop = '46'
+            canvasHeight = canvasHeight * 1.1
+        }
+    }
+
     // 调整图片在canvas中的定位
     params.grid = {
         left: gridLeft,
