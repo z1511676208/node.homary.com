@@ -7,6 +7,7 @@ const fs = require('fs')
 const path = require('path')
 const { parseFile } = require('./utlis.js')
 const { createMD5Hash } = require('../../lib/crypto')
+const { convertoptions } = require('../../lib/convert-options.js')
 
 // 获取当前文件所在目录的绝对路径
 const currentDir = __dirname
@@ -20,6 +21,9 @@ async function handleCharts(params) {
     if (!isObject(params)) {
         return new Result(STATUS_CODE.DEFECT).handle()
     }
+
+    // 递归查找方法
+    params = convertoptions(params)
 
     // 默认X轴 Y轴的宽高定位
     let gridLeft = '-20'
