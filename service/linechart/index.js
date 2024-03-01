@@ -28,8 +28,9 @@ async function handleCharts(params) {
     // 默认X轴 Y轴的宽高定位
     let gridLeft = '-20'
     let gridTop = '30'
-    let canvasWidth = params?.width || 420
-    let canvasHeight = params?.height || 236
+    let canvasScale = params?.scale || 1
+    let canvasWidth = params?.width * canvasScale || 420
+    let canvasHeight = params?.height * canvasScale || 236
 
     if (params?.xAxis?.show) {
         // 根据参数判断是否调整X轴
@@ -67,7 +68,6 @@ async function handleCharts(params) {
     }
 
     let chartsImgUrl = siblingDir + '/' + (md5HashPath || randomNumber) + '.png'
-    console.log('chartsImgUrl', chartsImgUrl)
 
     const res = await createImage(
         {
@@ -78,7 +78,6 @@ async function handleCharts(params) {
         },
         chartsImgUrl
     )
-    console.log('生成charts成功')
     return {
         code: STATUS_CODE.SUSCCESS,
         data: res
@@ -109,7 +108,6 @@ function createImage(config, chartsImgUrl) {
     config.option.animation = false
 
     chart = echarts.init(createCanvas(parseInt(config.width, 10), parseInt(config.height, 10)))
-    console.log(config.option, 'config.option')
     chart.setOption(config.option)
 
     if (config.path) {
