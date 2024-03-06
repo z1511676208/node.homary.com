@@ -7,7 +7,7 @@ const fs = require('fs')
 const path = require('path')
 const { parseFile } = require('./utlis.js')
 const { createMD5Hash } = require('../../lib/crypto')
-const { convertoptions } = require('../../lib/convert-options.js')
+const { handleConvertOptions, handleSeriesDataLength } = require('../../lib/convert-options.js')
 
 // 获取当前文件所在目录的绝对路径
 const currentDir = __dirname
@@ -18,19 +18,30 @@ const siblingDir = path.join(currentDir, '../../static/images/charts')
 const absoluteSiblingDir = path.resolve(siblingDir)
 
 async function handleCharts(params) {
+
     if (!isObject(params)) {
         return new Result(STATUS_CODE.DEFECT).handle()
     }
 
     // 递归查找方法
-    params = convertoptions(params)
+    params = handleConvertOptions(params)
+    // 最深的长度
+    const seriesDataLength = handleSeriesDataLength(params)
+
+    if (params && params.width) {
+        params.width = params.width * (1 + seriesDataLength / 100)
+    }
+
+    if (params && params.height) {
+        params.height = params.height * (1 + seriesDataLength / 100)
+    }
 
     // 默认X轴 Y轴的宽高定位
     let gridLeft = '-20'
     let gridTop = '30'
     let canvasScale = params?.scale || 1
-    let canvasWidth = params?.width * canvasScale || 420
-    let canvasHeight = params?.height * canvasScale || 236
+    let canvasWidth = params?.width * canvasScale  || 420
+    let canvasHeight = params?.height * canvasScale  || 236
 
     if (params?.xAxis?.show) {
         // 根据参数判断是否调整X轴
