@@ -191,10 +191,12 @@ class PuppeteerHelper {
             const filterKey = key => {
                 return `.${key.split(' ').join('.')}`
             }
+
             const rowBlockData = Array.from(document.querySelectorAll('.row-block')).map(element => {
                 return {
                     className: filterKey(element.className),
-                    link: element.getAttribute('link')
+                    link: element.getAttribute('link'),
+                    alt: element.getAttribute('alt')
                 }
             })
             const rowListData = Array.from(document.querySelectorAll('.row-list')).map(element => {
@@ -204,7 +206,8 @@ class PuppeteerHelper {
                     childrenList: Array.from(cardList).map(childElement => {
                         return {
                             className: filterKey(childElement.className),
-                            link: childElement.getAttribute('link')
+                            link: childElement.getAttribute('link'),
+                            alt: childElement.getAttribute('alt')
                         }
                     })
                 }
@@ -223,6 +226,7 @@ class PuppeteerHelper {
                 imagesListMap[className] = {
                     img: '',
                     link: data[i].link,
+                    img_alt: data[i].alt,
                     id: uuid()
                 }
             }
@@ -232,6 +236,7 @@ class PuppeteerHelper {
                         return {
                             img: '',
                             link: item.link,
+                            img_alt: item.alt,
                             id: uuid()
                         }
                     })
