@@ -65,8 +65,8 @@ async function handleCharts(params) {
 
     // 调整图片在canvas中的定位
     params.grid = {
-        left: gridLeft,
-        top: gridTop,
+        left: params.left || gridLeft,
+        top: params.top || gridTop,
         containLabel: true
     }
 
