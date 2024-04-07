@@ -2,7 +2,7 @@
  * @Author       : JHao
  * @Date         : 2023-08-31 15:13:28
  * @LastEditors  : JHao
- * @LastEditTime : 2024-01-23 13:58:11
+ * @LastEditTime : 2024-04-07 13:54:58
  */
 const puppeteer = require('puppeteer')
 const { STATUS_CODE } = require('@/lib/constant')
@@ -372,7 +372,24 @@ class PuppeteerHelper {
             })
             console.timeEnd(`访问页面 ${url}`)
             console.time('#email-template 渲染完成')
-            await page.waitForSelector('#email-template', { timeout: 10 * 1000 })
+            const renderElement = await Promise.race([
+                page.waitForSelector('#email-template', { timeout: 10 * 1000 }),
+                page.waitForSelector('#no-email-data', { timeout: 10 * 1000 }),
+                page.waitForSelector('#error-container', { timeout: 10 * 1000 })
+            ])
+            // 根据页面渲染的元素来判断当前页面状态
+            const renderId = await renderElement.evaluate(element => element.id)
+            // 页面接口数据为空
+            if (renderId === 'no-email-data') {
+                return { code: STATUS_CODE.SUSCCESS, data: {} }
+            }
+            // 页面接口异常
+            if (renderId === 'error-container') {
+                const errorMessage = '邮件页面内部接口异常'
+                const res = { code: STATUS_CODE.CATCH, msg: errorMessage }
+                reportEmailError(errorMessage, url, res)
+                return res
+            }
             console.timeEnd('#email-template 渲染完成')
             // 滚动页面 避免懒加载 导致截图错误
             console.time('滚动页面到底部')
