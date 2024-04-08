@@ -2,7 +2,7 @@
  * @Author       : JHao
  * @Date         : 2023-08-31 15:13:28
  * @LastEditors  : JHao
- * @LastEditTime : 2024-04-08 15:43:40
+ * @LastEditTime : 2024-04-08 18:08:17
  */
 const puppeteer = require('puppeteer')
 const { STATUS_CODE } = require('@/lib/constant')
@@ -287,7 +287,7 @@ class PuppeteerHelper {
                         }
                     }
                 }
-                screenshotPromiseList.push(handler)
+                screenshotPromiseList.push(handler.bind(this))
             }
         }
         for (let j = 0; j < screenshotPromiseList.length; j++) {
@@ -329,7 +329,7 @@ class PuppeteerHelper {
                             }
                             reslove()
                         })
-                        uploadImagePromiseList.push(handler)
+                        uploadImagePromiseList.push(handler.bind(this))
                     })
                 }
             }
