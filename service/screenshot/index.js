@@ -2,7 +2,7 @@
  * @Author       : JHao
  * @Date         : 2023-08-31 15:13:28
  * @LastEditors  : JHao
- * @LastEditTime : 2024-04-07 13:54:58
+ * @LastEditTime : 2024-04-08 10:28:46
  */
 const puppeteer = require('puppeteer')
 const { STATUS_CODE } = require('@/lib/constant')
@@ -14,6 +14,8 @@ const path = require('path')
 const fs = require('fs')
 const { uploadFile } = require('@/request/api/upload')
 const { isArray, isObject, deleteFolderRecursive, toFormData } = require('./utils')
+
+const { createMD5 } = require('@/lib/crypto')
 
 // 获取当前文件所在目录的绝对路径
 const currentDir = __dirname
@@ -358,20 +360,21 @@ class PuppeteerHelper {
         if (!url) {
             return new Result(STATUS_CODE.DEFECT).handle()
         }
-        console.time('初始化puppeteer')
+        const currentUrlMD5 = createMD5(url)
+        console.time(`${currentUrlMD5} => 初始化puppeteer`)
         const browser = await this._currentBrowser()
         const page = await browser.newPage()
         await page.setDefaultNavigationTimeout(0)
         // await page.emulate(iPhone);
-        console.timeEnd('初始化puppeteer')
+        console.timeEnd(`${currentUrlMD5} => 初始化puppeteer`)
         try {
-            console.time(`访问页面 ${url}`)
+            console.time(`${currentUrlMD5} => 访问页面 ${url}`)
             // await page.setUserAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1');
             await page.goto(url, {
                 waitUntil: 'networkidle0' // 不再有网络连接时触发（至少500毫秒后）
             })
-            console.timeEnd(`访问页面 ${url}`)
-            console.time('#email-template 渲染完成')
+            console.timeEnd(`${currentUrlMD5} => 访问页面 ${url}`)
+            console.time(`${currentUrlMD5} => #email-template 渲染完成`)
             const renderElement = await Promise.race([
                 page.waitForSelector('#email-template', { timeout: 10 * 1000 }),
                 page.waitForSelector('#no-email-data', { timeout: 10 * 1000 }),
@@ -390,30 +393,30 @@ class PuppeteerHelper {
                 reportEmailError(errorMessage, url, res)
                 return res
             }
-            console.timeEnd('#email-template 渲染完成')
+            console.timeEnd(`${currentUrlMD5} => #email-template 渲染完成`)
             // 滚动页面 避免懒加载 导致截图错误
-            console.time('滚动页面到底部')
+            console.time(`${currentUrlMD5} => 滚动页面到底部`)
             await this.waitPageLoaded(page)
-            console.timeEnd('滚动页面到底部')
+            console.timeEnd(`${currentUrlMD5} => 滚动页面到底部`)
             // 获取页面需要截图的数据
-            console.time('初始化数据')
+            console.time(`${currentUrlMD5} => 初始化数据`)
             const pageSrceenshotData = await this.getPageSrceenshotData(page)
             // 格式化截图数据
             const imagesListMap = await this.formatSrceenshotData(pageSrceenshotData)
             // 创建当前请求直属文件夹
             const currentScreenshotDir = `${absoluteSiblingDir}/${uuid()}`
             await fs.mkdirSync(currentScreenshotDir)
-            console.timeEnd('初始化数据')
+            console.timeEnd(`${currentUrlMD5} => 初始化数据`)
             // 生成截图队列 串行截图
-            console.time('截图')
+            console.time(`${currentUrlMD5} => 截图`)
             await this.generateScreenshotQueue(imagesListMap, page, currentScreenshotDir)
             await this.removeErrorData(imagesListMap)
-            console.timeEnd('截图')
+            console.timeEnd(`${currentUrlMD5} => 截图`)
             // 并行上传图片 替换responseData数据
-            console.time('上传图片')
+            console.time(`${currentUrlMD5} => 上传图片`)
             await this.uploadImageQueue(imagesListMap)
             await this.removeErrorData(imagesListMap)
-            console.timeEnd('上传图片')
+            console.timeEnd(`${currentUrlMD5} => 上传图片`)
             // 图片上传完毕 移除目录以及目录下的图片
             try {
                 await deleteFolderRecursive(currentScreenshotDir)
