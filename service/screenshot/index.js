@@ -2,7 +2,7 @@
  * @Author       : JHao
  * @Date         : 2023-08-31 15:13:28
  * @LastEditors  : JHao
- * @LastEditTime : 2024-04-08 10:28:46
+ * @LastEditTime : 2024-04-08 12:06:34
  */
 const puppeteer = require('puppeteer')
 const { STATUS_CODE } = require('@/lib/constant')
@@ -384,10 +384,14 @@ class PuppeteerHelper {
             const renderId = await renderElement.evaluate(element => element.id)
             // 页面接口数据为空
             if (renderId === 'no-email-data') {
+                await page.close()
+                await browser.disconnect()
                 return { code: STATUS_CODE.SUSCCESS, data: {} }
             }
             // 页面接口异常
             if (renderId === 'error-container') {
+                await page.close()
+                await browser.disconnect()
                 const errorMessage = '邮件页面内部接口异常'
                 const res = { code: STATUS_CODE.CATCH, msg: errorMessage }
                 reportEmailError(errorMessage, url, res)
@@ -395,9 +399,9 @@ class PuppeteerHelper {
             }
             console.timeEnd(`${currentUrlMD5} => #email-template 渲染完成`)
             // 滚动页面 避免懒加载 导致截图错误
-            console.time(`${currentUrlMD5} => 滚动页面到底部`)
-            await this.waitPageLoaded(page)
-            console.timeEnd(`${currentUrlMD5} => 滚动页面到底部`)
+            // console.time(`${currentUrlMD5} => 滚动页面到底部`)
+            // await this.waitPageLoaded(page)
+            // console.timeEnd(`${currentUrlMD5} => 滚动页面到底部`)
             // 获取页面需要截图的数据
             console.time(`${currentUrlMD5} => 初始化数据`)
             const pageSrceenshotData = await this.getPageSrceenshotData(page)
