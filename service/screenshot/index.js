@@ -2,7 +2,7 @@
  * @Author       : JHao
  * @Date         : 2023-08-31 15:13:28
  * @LastEditors  : JHao
- * @LastEditTime : 2024-04-08 14:23:34
+ * @LastEditTime : 2024-04-08 15:43:40
  */
 const puppeteer = require('puppeteer')
 const { STATUS_CODE } = require('@/lib/constant')
@@ -360,7 +360,7 @@ class PuppeteerHelper {
         if (!url) {
             return new Result(STATUS_CODE.DEFECT).handle()
         }
-        const currentUrlMD5 = createMD5(url)
+
         const operationTimeConsumption = {}
 
         operationTimeConsumption['init_puppeteer'] = new Date().getTime()
@@ -405,9 +405,7 @@ class PuppeteerHelper {
             }
             operationTimeConsumption['render_email_template'] = `${new Date().getTime() - operationTimeConsumption['render_email_template']}ms`
             // 滚动页面 避免懒加载 导致截图错误
-            // console.time(`${currentUrlMD5} => 滚动页面到底部`)
             // await this.waitPageLoaded(page)
-            // console.timeEnd(`${currentUrlMD5} => 滚动页面到底部`)
             // 获取页面需要截图的数据
             operationTimeConsumption['init_screenshot_data'] = new Date().getTime()
             const pageSrceenshotData = await this.getPageSrceenshotData(page)
