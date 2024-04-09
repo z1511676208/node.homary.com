@@ -32,7 +32,7 @@ router.get('/chart/linechart', async ctx => {
 
     try {
         const result = await handleCharts(params)
-        if (+result.code === STATUS_CODE.SUSCCESS) {
+        if (+result.code === STATUS_CODE.SUCCESS) {
             ctx.type = 'image/png'
             ctx.status = 200
             ctx.body = result.data
@@ -79,7 +79,7 @@ router.get('/chart/linechart/:rid/:option', async ctx => {
 
     try {
         const result = await handleCharts(base64Params)
-        if (+result.code === STATUS_CODE.SUSCCESS) {
+        if (+result.code === STATUS_CODE.SUCCESS) {
             ctx.type = 'image/png'
             ctx.status = 200
             ctx.body = result.data

@@ -17,7 +17,7 @@
 //     image.src = imgUrl;
 //     image.onload = () => {
 //       contx.drawImage(image, 0, 0);
-//       resolve({ code: STATUS_CODE.SUSCCESS, info: 'ok' });
+//       resolve({ code: STATUS_CODE.SUCCESS, info: 'ok' });
 //     };
 //     image.onerror = (err) => {
 //       resolve({

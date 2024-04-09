@@ -90,7 +90,7 @@ async function handleCharts(params) {
         chartsImgUrl
     )
     return {
-        code: STATUS_CODE.SUSCCESS,
+        code: STATUS_CODE.SUCCESS,
         data: res
     }
 }

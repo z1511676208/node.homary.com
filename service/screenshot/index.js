@@ -393,7 +393,7 @@ class PuppeteerHelper {
             if (renderId === 'no-email-data') {
                 await page.close()
                 await browser.disconnect()
-                return { code: STATUS_CODE.SUSCCESS, data: {} }
+                return { code: STATUS_CODE.SUCCESS, data: {} }
             }
             // 页面接口异常
             if (renderId === 'error-container') {
@@ -434,7 +434,7 @@ class PuppeteerHelper {
             }
             await page.close()
             await browser.disconnect()
-            return { code: STATUS_CODE.SUSCCESS, data: imagesListMap, operation_time_consumption: operationTimeConsumption }
+            return { code: STATUS_CODE.SUCCESS, data: imagesListMap, operation_time_consumption: operationTimeConsumption }
         } catch (error) {
             await page.close()
             await browser.disconnect()

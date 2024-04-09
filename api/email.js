@@ -31,7 +31,7 @@ router.get('/email/screenshot', async ctx => {
     try {
         const url = decodeURIComponent(params.url)
         const result = await puppeteerInstance.getPageScreenshot(url)
-        if (+result.code === STATUS_CODE.SUSCCESS) {
+        if (+result.code === STATUS_CODE.SUCCESS) {
             ctx.success(
                 result.data,
                 'success',
