@@ -2,7 +2,7 @@
  * @Author       : JHao
  * @Date         : 2023-08-31 15:13:28
  * @LastEditors  : JHao
- * @LastEditTime : 2024-04-08 18:08:17
+ * @LastEditTime : 2024-04-09 09:42:58
  */
 const puppeteer = require('puppeteer')
 const { STATUS_CODE } = require('@/lib/constant')
@@ -282,6 +282,7 @@ class PuppeteerHelper {
                             })
                             imagesListMap[key]['children'][i].img = buffer
                         } catch (error) {
+                            reportEmailError(`截图异常 => ${error.toString}`, key, res)
                             const currentId = imagesListMap[key]['children'][i].id
                             this.errorImageIdMap[key] = [...(this.errorImageIdMap[key] || []), currentId]
                         }
@@ -329,7 +330,7 @@ class PuppeteerHelper {
                             }
                             reslove()
                         })
-                        uploadImagePromiseList.push(handler.bind(this))
+                        uploadImagePromiseList.push(handler)
                     })
                 }
             }
