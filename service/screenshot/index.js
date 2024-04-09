@@ -282,7 +282,7 @@ class PuppeteerHelper {
                             })
                             imagesListMap[key]['children'][i].img = buffer
                         } catch (error) {
-                            reportEmailError(`截图异常 => ${error.toString}`, key, res)
+                            reportEmailError(`截图异常 => ${error.toString}`, key, {})
                             const currentId = imagesListMap[key]['children'][i].id
                             this.errorImageIdMap[key] = [...(this.errorImageIdMap[key] || []), currentId]
                         }
