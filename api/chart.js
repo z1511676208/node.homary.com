@@ -10,13 +10,19 @@ const { STATUS_CODE } = require('../lib/constant')
 const { Result } = require('../lib/util')
 const { isObject } = require('../service/screenshot/utils')
 const { handleCharts } = require('../service/linechart')
+const { handleEncodeSearchKey } = require('@/lib/handleQueryURL')
 
 const router = new Router()
 
 // 生成echarts图
 router.get('/chart/linechart', async ctx => {
     const urlParams = ctx.query || ctx.request.query || {}
-    const params = urlParams?.option ? JSON.parse(decodeURIComponent(urlParams.option)) : {}
+    let params = ""
+    try {
+        params = urlParams?.option ? JSON.parse(decodeURIComponent(handleEncodeSearchKey(urlParams.option))) : {}
+    } catch (e) {
+        console.log('decodeURIComponent',e)
+    }
 
     if (!isObject(params)) {
         const { code, msg } = new Result(STATUS_CODE.DEFECT).handle()
