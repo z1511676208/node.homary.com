@@ -2,7 +2,7 @@
  * @Author       : JHao
  * @Date         : 2023-08-31 15:13:28
  * @LastEditors  : JHao
- * @LastEditTime : 2024-04-11 15:06:44
+ * @LastEditTime : 2024-04-12 17:34:40
  */
 const puppeteer = require('puppeteer')
 const { STATUS_CODE } = require('@/lib/constant')
@@ -41,7 +41,7 @@ class PuppeteerHelper {
     constructor() {
         this.instance = null
         // 启动n个浏览器
-        this.wsEndpointMaxNumber = 6
+        this.wsEndpointMaxNumber = 4
         // 存储browser.WSEndpoint列表
         this.wsEndpoBrowserList = []
         // 限定页面打开次数
@@ -67,6 +67,8 @@ class PuppeteerHelper {
                 '--single-process' // 单进程运行
             ]
         }
+        // 正在重新创建浏览器实例的索引
+        this.isRebuildBrowserIndex = []
 
         this.errorImageIdMap = {} // 存储列表卡片截图异常的数据
 
@@ -107,6 +109,11 @@ class PuppeteerHelper {
         this.wsEndpoBrowserList[num] = await browser.wsEndpoint()
         // 初始化打开次数,因为浏览器会打开一个空白页
         this.browserOpenPageNumber[num] = 1
+        setTimeout(() => {
+            if (this.isRebuildBrowserIndex.length > 0) {
+                this.isRebuildBrowserIndex = this.isRebuildBrowserIndex.filter(item => item !== num)
+            }
+        })
         return browser
     }
 
@@ -152,8 +159,16 @@ class PuppeteerHelper {
             //     browser = this._replaceBrowserInstance(browser, tmp)
             // }
         } catch (err) {
-            // 连接失败重新创建新的浏览器实例
-            browser = await this._generateBrowser(tmp)
+            // 连接失败切换其他已存在的浏览器实例
+            // browser = await this._generateBrowser(tmp)
+            if (!this.isRebuildBrowserIndex?.includes(tmp)) {
+                reportEmailError(`浏览器连接失败`, tmp, {})
+                this.isRebuildBrowserIndex.push(tmp)
+                // 连接失败重新创建新的浏览器实例 替换掉失败了的
+                this._generateBrowser(tmp)
+            }
+            // 连接失败切换其他已存在的浏览器实例
+            browser = await this._currentBrowser()
         }
         // 增加打开页面次数
         this.browserOpenPageNumber[tmp]++
@@ -363,9 +378,10 @@ class PuppeteerHelper {
     }
     async pageBrowserDisconnect(page, browser) {
         await page.close()
+        const openPages = await browser.pages()
         const currentWSEndpoint = await browser.wsEndpoint()
         // 浏览器实例异常后 并发情况下 会导致多开了浏览器实例 如果不存在于当前实例列表 则关闭
-        if (this.wsEndpoBrowserList.includes(currentWSEndpoint)) {
+        if (this.wsEndpoBrowserList.includes(currentWSEndpoint) || (openPages && openPages.length > 1)) {
             await browser.disconnect()
         } else {
             await browser.close()
