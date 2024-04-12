@@ -2,7 +2,7 @@
  * @Author       : JHao
  * @Date         : 2023-08-31 15:13:28
  * @LastEditors  : JHao
- * @LastEditTime : 2024-01-23 13:58:11
+ * @LastEditTime : 2024-04-12 17:34:40
  */
 const puppeteer = require('puppeteer')
 const { STATUS_CODE } = require('@/lib/constant')
@@ -41,7 +41,7 @@ class PuppeteerHelper {
     constructor() {
         this.instance = null
         // 启动n个浏览器
-        this.wsEndpointMaxNumber = 6
+        this.wsEndpointMaxNumber = 4
         // 存储browser.WSEndpoint列表
         this.wsEndpoBrowserList = []
         // 限定页面打开次数
@@ -67,6 +67,8 @@ class PuppeteerHelper {
                 '--single-process' // 单进程运行
             ]
         }
+        // 正在重新创建浏览器实例的索引
+        this.isRebuildBrowserIndex = []
 
         this.errorImageIdMap = {} // 存储列表卡片截图异常的数据
 
@@ -107,6 +109,11 @@ class PuppeteerHelper {
         this.wsEndpoBrowserList[num] = await browser.wsEndpoint()
         // 初始化打开次数,因为浏览器会打开一个空白页
         this.browserOpenPageNumber[num] = 1
+        setTimeout(() => {
+            if (this.isRebuildBrowserIndex.length > 0) {
+                this.isRebuildBrowserIndex = this.isRebuildBrowserIndex.filter(item => item !== num)
+            }
+        })
         return browser
     }
 
@@ -148,12 +155,20 @@ class PuppeteerHelper {
             browser = await puppeteer.connect({ browserWSEndpoint })
 
             // 如果当前浏览器超过规定次数，则替换浏览器
-            if (this.browserOpenPageNumber[tmp] > this.pageCount) {
-                browser = this._replaceBrowserInstance(browser, tmp)
-            }
+            // if (this.browserOpenPageNumber[tmp] > this.pageCount) {
+            //     browser = this._replaceBrowserInstance(browser, tmp)
+            // }
         } catch (err) {
-            // 连接失败重新创建新的浏览器实例
-            browser = await this._generateBrowser(tmp)
+            // 连接失败切换其他已存在的浏览器实例
+            // browser = await this._generateBrowser(tmp)
+            if (!this.isRebuildBrowserIndex?.includes(tmp)) {
+                reportEmailError(`浏览器连接失败`, tmp, {})
+                this.isRebuildBrowserIndex.push(tmp)
+                // 连接失败重新创建新的浏览器实例 替换掉失败了的
+                this._generateBrowser(tmp)
+            }
+            // 连接失败切换其他已存在的浏览器实例
+            browser = await this._currentBrowser()
         }
         // 增加打开页面次数
         this.browserOpenPageNumber[tmp]++
@@ -162,25 +177,32 @@ class PuppeteerHelper {
 
     // 滚动页面 避免懒加载 导致截图错误
     async waitPageLoaded(page) {
-        await page.evaluate(async () => {
-            await new Promise((resolve, reject) => {
-                try {
-                    const maxScroll = Number.MAX_SAFE_INTEGER
-                    let lastScroll = 0
-                    const interval = setInterval(() => {
-                        window.scrollBy(0, 100)
-                        const scrollTop = document.documentElement.scrollTop || window.scrollY
-                        if (scrollTop === maxScroll || scrollTop === lastScroll) {
-                            // 判断触底，或超出js最大安全长度
-                            clearInterval(interval)
-                            resolve()
-                        } else {
-                            lastScroll = scrollTop
-                        }
-                    }, 100) // 100毫秒执行间隔
-                } catch (err) {
-                    reject(err)
-                }
+        // await page.evaluate(async () => {
+        //     await new Promise((resolve, reject) => {
+        //         try {
+        //             const maxScroll = Number.MAX_SAFE_INTEGER
+        //             let lastScroll = 0
+        //             const interval = setInterval(() => {
+        //                 window.scrollBy(0, 100)
+        //                 const scrollTop = document.documentElement.scrollTop || window.scrollY
+        //                 if (scrollTop === maxScroll || scrollTop === lastScroll) {
+        //                     // 判断触底，或超出js最大安全长度
+        //                     clearInterval(interval)
+        //                     resolve()
+        //                 } else {
+        //                     lastScroll = scrollTop
+        //                 }
+        //             }, 100) // 100毫秒执行间隔
+        //         } catch (err) {
+        //             reject(err)
+        //         }
+        //     })
+        // })
+        await page.evaluate(() => {
+            const scrollTop = document.body.scrollHeight || document.documentElement.scrollHeight
+            window.scrollTo({
+                top: scrollTop,
+                behavior: 'smooth'
             })
         })
     }
@@ -280,12 +302,13 @@ class PuppeteerHelper {
                             })
                             imagesListMap[key]['children'][i].img = buffer
                         } catch (error) {
+                            reportEmailError(`截图异常 => ${error.toString()}`, key, {})
                             const currentId = imagesListMap[key]['children'][i].id
                             this.errorImageIdMap[key] = [...(this.errorImageIdMap[key] || []), currentId]
                         }
                     }
                 }
-                screenshotPromiseList.push(handler)
+                screenshotPromiseList.push(handler.bind(this))
             }
         }
         for (let j = 0; j < screenshotPromiseList.length; j++) {
@@ -353,62 +376,97 @@ class PuppeteerHelper {
         }
         return data
     }
+    async pageBrowserDisconnect(page, browser) {
+        await page.close()
+        const openPages = await browser.pages()
+        const currentWSEndpoint = await browser.wsEndpoint()
+        // 浏览器实例异常后 并发情况下 会导致多开了浏览器实例 如果不存在于当前实例列表 则关闭
+        if (this.wsEndpoBrowserList.includes(currentWSEndpoint) || (openPages && openPages.length > 1)) {
+            await browser.disconnect()
+        } else {
+            await browser.close()
+        }
+    }
 
     async getPageScreenshot(url = '') {
         if (!url) {
             return new Result(STATUS_CODE.DEFECT).handle()
         }
-        console.time('初始化puppeteer')
+
+        const operationTimeConsumption = {}
+
+        operationTimeConsumption['init_puppeteer'] = new Date().getTime()
+
         const browser = await this._currentBrowser()
         const page = await browser.newPage()
         await page.setDefaultNavigationTimeout(0)
         // await page.emulate(iPhone);
-        console.timeEnd('初始化puppeteer')
+
+        operationTimeConsumption['init_puppeteer'] = `${new Date().getTime() - operationTimeConsumption['init_puppeteer']}ms`
+
         try {
-            console.time(`访问页面 ${url}`)
+            operationTimeConsumption['page_load'] = new Date().getTime()
             // await page.setUserAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1');
             await page.goto(url, {
                 waitUntil: 'networkidle0' // 不再有网络连接时触发（至少500毫秒后）
             })
-            console.timeEnd(`访问页面 ${url}`)
-            console.time('#email-template 渲染完成')
-            await page.waitForSelector('#email-template', { timeout: 10 * 1000 })
-            console.timeEnd('#email-template 渲染完成')
+            operationTimeConsumption['page_load'] = `${new Date().getTime() - operationTimeConsumption['page_load']}ms`
+
+            operationTimeConsumption['render_email_template'] = new Date().getTime()
+            const renderElement = await Promise.race([
+                page.waitForSelector('#email-template', { timeout: 10 * 1000 }),
+                page.waitForSelector('#no-email-data', { timeout: 10 * 1000 }),
+                page.waitForSelector('#error-container', { timeout: 10 * 1000 })
+            ])
+            // 根据页面渲染的元素来判断当前页面状态
+            const renderId = await renderElement.evaluate(element => element.id)
+            // 页面接口数据为空
+            if (renderId === 'no-email-data') {
+                await this.pageBrowserDisconnect(page, browser)
+                return { code: STATUS_CODE.SUCCESS, data: {} }
+            }
+            // 页面接口异常
+            if (renderId === 'error-container') {
+                await this.pageBrowserDisconnect(page, browser)
+                const errorMessage = '邮件页面内部接口异常'
+                const res = { code: STATUS_CODE.CATCH, msg: errorMessage }
+                reportEmailError(errorMessage, url, res)
+                return res
+            }
+            operationTimeConsumption['render_email_template'] = `${new Date().getTime() - operationTimeConsumption['render_email_template']}ms`
             // 滚动页面 避免懒加载 导致截图错误
-            console.time('滚动页面到底部')
+            operationTimeConsumption['scroll_to_bottom'] = new Date().getTime()
             await this.waitPageLoaded(page)
-            console.timeEnd('滚动页面到底部')
+            operationTimeConsumption['scroll_to_bottom'] = `${new Date().getTime() - operationTimeConsumption['scroll_to_bottom']}ms`
             // 获取页面需要截图的数据
-            console.time('初始化数据')
+            operationTimeConsumption['init_screenshot_data'] = new Date().getTime()
             const pageSrceenshotData = await this.getPageSrceenshotData(page)
             // 格式化截图数据
             const imagesListMap = await this.formatSrceenshotData(pageSrceenshotData)
             // 创建当前请求直属文件夹
             const currentScreenshotDir = `${absoluteSiblingDir}/${uuid()}`
             await fs.mkdirSync(currentScreenshotDir)
-            console.timeEnd('初始化数据')
+            operationTimeConsumption['init_screenshot_data'] = `${new Date().getTime() - operationTimeConsumption['init_screenshot_data']}ms`
             // 生成截图队列 串行截图
-            console.time('截图')
+            operationTimeConsumption['screenshot_handler'] = new Date().getTime()
             await this.generateScreenshotQueue(imagesListMap, page, currentScreenshotDir)
             await this.removeErrorData(imagesListMap)
-            console.timeEnd('截图')
+            operationTimeConsumption['screenshot_handler'] = `${new Date().getTime() - operationTimeConsumption['screenshot_handler']}ms`
             // 并行上传图片 替换responseData数据
-            console.time('上传图片')
+            operationTimeConsumption['upload_image'] = new Date().getTime()
             await this.uploadImageQueue(imagesListMap)
             await this.removeErrorData(imagesListMap)
-            console.timeEnd('上传图片')
+            operationTimeConsumption['upload_image'] = `${new Date().getTime() - operationTimeConsumption['upload_image']}ms`
             // 图片上传完毕 移除目录以及目录下的图片
             try {
                 await deleteFolderRecursive(currentScreenshotDir)
             } catch (error) {
                 console.error('rmdirSync Error => ', error)
             }
-            await page.close()
-            await browser.disconnect()
-            return { code: STATUS_CODE.SUSCCESS, data: imagesListMap }
+            await this.pageBrowserDisconnect(page, browser)
+            return { code: STATUS_CODE.SUCCESS, data: imagesListMap, operation_time_consumption: operationTimeConsumption }
         } catch (error) {
-            await page.close()
-            await browser.disconnect()
+            await this.pageBrowserDisconnect(page, browser)
             console.log('Error => ', error, url)
             const res = { code: STATUS_CODE.CATCH, msg: error.toString() }
             reportEmailError(error, url, res)

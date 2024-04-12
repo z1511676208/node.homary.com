@@ -3,7 +3,7 @@
  * @Date         : 2023-08-31 15:03:56
  * 邮件截图
  * @LastEditors  : JHao
- * @LastEditTime : 2024-01-16 15:07:30
+ * @LastEditTime : 2024-04-08 14:20:17
  */
 const Router = require('koa-router')
 const { STATUS_CODE } = require('../lib/constant')
@@ -31,8 +31,13 @@ router.get('/email/screenshot', async ctx => {
     try {
         const url = decodeURIComponent(params.url)
         const result = await puppeteerInstance.getPageScreenshot(url)
-        if (+result.code === STATUS_CODE.SUSCCESS) {
-            ctx.success(result.data)
+        if (+result.code === STATUS_CODE.SUCCESS) {
+            ctx.success(
+                result.data,
+                'success',
+                result.code,
+                isObject(result.operation_time_consumption) ? { operation_time_consumption: result.operation_time_consumption } : {}
+            )
         } else {
             ctx.fail(result.msg, result.code)
         }
