@@ -2,7 +2,7 @@
  * @Author       : JHao
  * @Date         : 2022-02-17 14:46:39
  * @LastEditors  : JHao
- * @LastEditTime : 2024-04-08 14:19:37
+ * @LastEditTime : 2023-08-31 16:57:52
  */
 /**
  * Created by Excellent on 21/9/18
@@ -15,28 +15,26 @@
  * @param option.failMsg 请求失败返回的消息
  * @returns {function} koa中间件
  */
-const uniteResponse = (option = {}) =>
-    async function (ctx, next) {
-        ctx.success = function (data = {}, msg, code, otherResponseData = {}) {
-            ctx.status = option.successCode || 200
-            ctx.type = option.type || 'json'
-            ctx.body = {
-                code: code || option.successCode || data.code || 200,
-                data: data.data || data,
-                info: msg || option.successMsg || data.info || 'ok',
-                ...otherResponseData
-            }
-        }
-        ctx.fail = function (msg, code) {
-            ctx.status = option.failCode || 400
-            ctx.type = option.type || 'json'
-            ctx.body = {
-                code: code || option.failCode || 400,
-                info: msg || option.failMsg || 'fail'
-            }
-        }
+const uniteResponse = (option = {}) => async function (ctx, next) {
+  ctx.success = function (data = {}, msg, code) {
+    ctx.status = option.successCode || 200;
+    ctx.type = option.type || 'json';
+    ctx.body = {
+      code: code || option.successCode || data.code || 200,
+      data: data.data || data,
+      info: msg || option.successMsg || data.info || 'ok',
+    };
+  };
+  ctx.fail = function (msg, code) {
+    ctx.status = option.failCode || 400;
+    ctx.type = option.type || 'json';
+    ctx.body = {
+      code: code || option.failCode || 400,
+      info: msg || option.failMsg || 'fail',
+    };
+  };
 
-        await next()
-    }
+  await next();
+};
 
-module.exports = uniteResponse
+module.exports = uniteResponse;

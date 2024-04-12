@@ -23,7 +23,7 @@
 //   try {
 //     const result = await createGifOrPng(postParam);
 //     console.log('result', result);
-//     if (+result.code === STATUS_CODE.SUCCESS) {
+//     if (+result.code === STATUS_CODE.SUSCCESS) {
 //       const { formData, headers } = await toFormData(result.buffer, postParam.type, postParam.save_path);
 //       // 上传接口
 //       try {

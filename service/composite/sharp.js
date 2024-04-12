@@ -38,7 +38,7 @@
 //         })
 //         .composite(compositeInfo)
 //         .toBuffer();
-//       resolve({ code: STATUS_CODE.SUCCESS, buffer });
+//       resolve({ code: STATUS_CODE.SUSCCESS, buffer });
 //     });
 //   } catch (error) {
 //     return new Result(STATUS_CODE.SYNTHETIC).handle();

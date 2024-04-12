@@ -10,19 +10,13 @@ const { STATUS_CODE } = require('../lib/constant')
 const { Result } = require('../lib/util')
 const { isObject } = require('../service/screenshot/utils')
 const { handleCharts } = require('../service/linechart')
-const { handleEncodeSearchKey } = require('@/lib/handleQueryURL')
 
 const router = new Router()
 
 // 生成echarts图
 router.get('/chart/linechart', async ctx => {
     const urlParams = ctx.query || ctx.request.query || {}
-    let params = ""
-    try {
-        params = urlParams?.option ? JSON.parse(decodeURIComponent(handleEncodeSearchKey(urlParams.option))) : {}
-    } catch (e) {
-        console.log('decodeURIComponent',e)
-    }
+    const params = urlParams?.option ? JSON.parse(decodeURIComponent(urlParams.option)) : {}
 
     if (!isObject(params)) {
         const { code, msg } = new Result(STATUS_CODE.DEFECT).handle()
@@ -32,7 +26,7 @@ router.get('/chart/linechart', async ctx => {
 
     try {
         const result = await handleCharts(params)
-        if (+result.code === STATUS_CODE.SUCCESS) {
+        if (+result.code === STATUS_CODE.SUSCCESS) {
             ctx.type = 'image/png'
             ctx.status = 200
             ctx.body = result.data
@@ -79,7 +73,7 @@ router.get('/chart/linechart/:rid/:option', async ctx => {
 
     try {
         const result = await handleCharts(base64Params)
-        if (+result.code === STATUS_CODE.SUCCESS) {
+        if (+result.code === STATUS_CODE.SUSCCESS) {
             ctx.type = 'image/png'
             ctx.status = 200
             ctx.body = result.data
