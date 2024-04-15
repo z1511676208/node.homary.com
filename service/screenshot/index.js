@@ -2,7 +2,7 @@
  * @Author       : JHao
  * @Date         : 2023-08-31 15:13:28
  * @LastEditors  : JHao
- * @LastEditTime : 2024-04-09 09:42:58
+ * @LastEditTime : 2024-04-15 14:22:24
  */
 const puppeteer = require('puppeteer')
 const { STATUS_CODE } = require('@/lib/constant')
@@ -47,7 +47,7 @@ class PuppeteerHelper {
         // 存储browser.WSEndpoint列表
         this.wsEndpoBrowserList = []
         // 限定页面打开次数
-        this.pageCount = 1000
+        this.pageCount = 200
         // 存储浏览器打开页面次数
         this.browserOpenPageNumber = []
         // 重启浏览器的timer
@@ -131,18 +131,34 @@ class PuppeteerHelper {
             return browser
         }
         // 关闭浏览器
-        browser.close()
+        try {
+            const browserWSEndpoint = this.wsEndpoBrowserList[num]
+            const oldBrowser = await puppeteer.connect({ browserWSEndpoint })
+            oldBrowser.close()
+            console.log(`关掉了 =====> ${num}`)
+        } catch (error) {
+            console.log('=====>', error.toString())
+        }
         // 使用新的浏览器
         const newBrowser = await this._generateBrowser(num)
         return newBrowser
+    }
+
+    findMinIndex(arr) {
+        if (arr.length === 0) {
+            return -1 // 如果数组为空，则返回 -1
+        }
+
+        const minValue = Math.min(...arr) // 获取数组中的最小值
+        return arr.indexOf(minValue) // 返回最小值的索引
     }
 
     /**
      * @desc 提供浏览器实例
      * */
     async _currentBrowser() {
-        // 通过随机数做简单的负载均衡,确定使用的第几台浏览器
-        const tmp = Math.floor(Math.random() * this.wsEndpointMaxNumber)
+        // 通过获取打开页面最少的浏览器实例 来实现均匀分配
+        const tmp = this.findMinIndex(this.browserOpenPageNumber)
         const browserWSEndpoint = this.wsEndpoBrowserList[tmp]
         let browser
         try {
@@ -282,7 +298,7 @@ class PuppeteerHelper {
                             })
                             imagesListMap[key]['children'][i].img = buffer
                         } catch (error) {
-                            reportEmailError(`截图异常 => ${error.toString}`, key, {})
+                            reportEmailError(`截图异常 => ${error.toString()}`, key, {})
                             const currentId = imagesListMap[key]['children'][i].id
                             this.errorImageIdMap[key] = [...(this.errorImageIdMap[key] || []), currentId]
                         }

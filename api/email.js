@@ -3,13 +3,14 @@
  * @Date         : 2023-08-31 15:03:56
  * 邮件截图
  * @LastEditors  : JHao
- * @LastEditTime : 2024-04-08 14:20:17
+ * @LastEditTime : 2024-04-15 14:21:16
  */
 const Router = require('koa-router')
 const { STATUS_CODE } = require('../lib/constant')
 const { Result } = require('../lib/util')
 const { puppeteerInstance, reportEmailError } = require('../service/screenshot')
 const { isObject } = require('../service/screenshot/utils')
+const pLimit = require('p-limit')
 
 const router = new Router()
 
@@ -20,6 +21,9 @@ router.get('/', async ctx => {
 })
 
 // 截图
+// 限流器，限制同时只能有5个请求在处理
+const requestLimiter = pLimit(30)
+
 router.get('/email/screenshot', async ctx => {
     const params = ctx.query || ctx.request.query || {}
     if (!isObject(params) || !params?.url) {
@@ -30,7 +34,10 @@ router.get('/email/screenshot', async ctx => {
     }
     try {
         const url = decodeURIComponent(params.url)
-        const result = await puppeteerInstance.getPageScreenshot(url)
+
+        const result = await requestLimiter(async () => {
+            return await puppeteerInstance.getPageScreenshot(url)
+        })
         if (+result.code === STATUS_CODE.SUCCESS) {
             ctx.success(
                 result.data,
