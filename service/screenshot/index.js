@@ -2,7 +2,7 @@
  * @Author       : JHao
  * @Date         : 2023-08-31 15:13:28
  * @LastEditors  : JHao
- * @LastEditTime : 2024-04-11 15:01:30
+ * @LastEditTime : 2024-04-09 09:42:58
  */
 const puppeteer = require('puppeteer')
 const { STATUS_CODE } = require('@/lib/constant')
@@ -14,6 +14,8 @@ const path = require('path')
 const fs = require('fs')
 const { uploadFile } = require('@/request/api/upload')
 const { isArray, isObject, deleteFolderRecursive, toFormData } = require('./utils')
+
+const { createMD5 } = require('@/lib/crypto')
 
 // 获取当前文件所在目录的绝对路径
 const currentDir = __dirname
@@ -148,9 +150,9 @@ class PuppeteerHelper {
             browser = await puppeteer.connect({ browserWSEndpoint })
 
             // 如果当前浏览器超过规定次数，则替换浏览器
-            // if (this.browserOpenPageNumber[tmp] > this.pageCount) {
-            //     browser = this._replaceBrowserInstance(browser, tmp)
-            // }
+            if (this.browserOpenPageNumber[tmp] > this.pageCount) {
+                browser = this._replaceBrowserInstance(browser, tmp)
+            }
         } catch (err) {
             // 连接失败重新创建新的浏览器实例
             browser = await this._generateBrowser(tmp)
@@ -162,32 +164,25 @@ class PuppeteerHelper {
 
     // 滚动页面 避免懒加载 导致截图错误
     async waitPageLoaded(page) {
-        // await page.evaluate(async () => {
-        //     await new Promise((resolve, reject) => {
-        //         try {
-        //             const maxScroll = Number.MAX_SAFE_INTEGER
-        //             let lastScroll = 0
-        //             const interval = setInterval(() => {
-        //                 window.scrollBy(0, 100)
-        //                 const scrollTop = document.documentElement.scrollTop || window.scrollY
-        //                 if (scrollTop === maxScroll || scrollTop === lastScroll) {
-        //                     // 判断触底，或超出js最大安全长度
-        //                     clearInterval(interval)
-        //                     resolve()
-        //                 } else {
-        //                     lastScroll = scrollTop
-        //                 }
-        //             }, 100) // 100毫秒执行间隔
-        //         } catch (err) {
-        //             reject(err)
-        //         }
-        //     })
-        // })
-        await page.evaluate(() => {
-            const scrollTop = document.body.scrollHeight || document.documentElement.scrollHeight
-            window.scrollTo({
-                top: scrollTop,
-                behavior: 'smooth'
+        await page.evaluate(async () => {
+            await new Promise((resolve, reject) => {
+                try {
+                    const maxScroll = Number.MAX_SAFE_INTEGER
+                    let lastScroll = 0
+                    const interval = setInterval(() => {
+                        window.scrollBy(0, 100)
+                        const scrollTop = document.documentElement.scrollTop || window.scrollY
+                        if (scrollTop === maxScroll || scrollTop === lastScroll) {
+                            // 判断触底，或超出js最大安全长度
+                            clearInterval(interval)
+                            resolve()
+                        } else {
+                            lastScroll = scrollTop
+                        }
+                    }, 100) // 100毫秒执行间隔
+                } catch (err) {
+                    reject(err)
+                }
             })
         })
     }
@@ -361,16 +356,6 @@ class PuppeteerHelper {
         }
         return data
     }
-    async pageBrowserDisconnect(page, browser) {
-        await page.close()
-        const currentWSEndpoint = await browser.wsEndpoint()
-        // 浏览器实例异常后 并发情况下 会导致多开了浏览器实例 如果不存在于当前实例列表 则关闭
-        if (this.wsEndpoBrowserList.includes(currentWSEndpoint)) {
-            await browser.disconnect()
-        } else {
-            await browser.close()
-        }
-    }
 
     async getPageScreenshot(url = '') {
         if (!url) {
@@ -406,12 +391,14 @@ class PuppeteerHelper {
             const renderId = await renderElement.evaluate(element => element.id)
             // 页面接口数据为空
             if (renderId === 'no-email-data') {
-                await this.pageBrowserDisconnect(page, browser)
+                await page.close()
+                await browser.disconnect()
                 return { code: STATUS_CODE.SUCCESS, data: {} }
             }
             // 页面接口异常
             if (renderId === 'error-container') {
-                await this.pageBrowserDisconnect(page, browser)
+                await page.close()
+                await browser.disconnect()
                 const errorMessage = '邮件页面内部接口异常'
                 const res = { code: STATUS_CODE.CATCH, msg: errorMessage }
                 reportEmailError(errorMessage, url, res)
@@ -419,9 +406,7 @@ class PuppeteerHelper {
             }
             operationTimeConsumption['render_email_template'] = `${new Date().getTime() - operationTimeConsumption['render_email_template']}ms`
             // 滚动页面 避免懒加载 导致截图错误
-            operationTimeConsumption['scroll_to_bottom'] = new Date().getTime()
-            await this.waitPageLoaded(page)
-            operationTimeConsumption['scroll_to_bottom'] = `${new Date().getTime() - operationTimeConsumption['scroll_to_bottom']}ms`
+            // await this.waitPageLoaded(page)
             // 获取页面需要截图的数据
             operationTimeConsumption['init_screenshot_data'] = new Date().getTime()
             const pageSrceenshotData = await this.getPageSrceenshotData(page)
@@ -447,10 +432,12 @@ class PuppeteerHelper {
             } catch (error) {
                 console.error('rmdirSync Error => ', error)
             }
-            await this.pageBrowserDisconnect(page, browser)
+            await page.close()
+            await browser.disconnect()
             return { code: STATUS_CODE.SUCCESS, data: imagesListMap, operation_time_consumption: operationTimeConsumption }
         } catch (error) {
-            await this.pageBrowserDisconnect(page, browser)
+            await page.close()
+            await browser.disconnect()
             console.log('Error => ', error, url)
             const res = { code: STATUS_CODE.CATCH, msg: error.toString() }
             reportEmailError(error, url, res)
