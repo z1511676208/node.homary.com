@@ -2,7 +2,7 @@
  * @Author       : JHao
  * @Date         : 2023-08-31 15:13:28
  * @LastEditors  : JHao
- * @LastEditTime : 2024-04-15 14:22:24
+ * @LastEditTime : 2024-04-16 13:42:10
  */
 const puppeteer = require('puppeteer')
 const { STATUS_CODE } = require('@/lib/constant')
@@ -47,7 +47,7 @@ class PuppeteerHelper {
         // 存储browser.WSEndpoint列表
         this.wsEndpoBrowserList = []
         // 限定页面打开次数
-        this.pageCount = 200
+        this.pageCount = 1000
         // 存储浏览器打开页面次数
         this.browserOpenPageNumber = []
         // 重启浏览器的timer
@@ -148,7 +148,6 @@ class PuppeteerHelper {
         if (arr.length === 0) {
             return -1 // 如果数组为空，则返回 -1
         }
-
         const minValue = Math.min(...arr) // 获取数组中的最小值
         return arr.indexOf(minValue) // 返回最小值的索引
     }
@@ -160,6 +159,9 @@ class PuppeteerHelper {
         // 通过获取打开页面最少的浏览器实例 来实现均匀分配
         const tmp = this.findMinIndex(this.browserOpenPageNumber)
         const browserWSEndpoint = this.wsEndpoBrowserList[tmp]
+        // 增加打开页面次数
+        this.browserOpenPageNumber[tmp]++
+
         let browser
         try {
             // 使用节点来重新建立连接
@@ -173,8 +175,6 @@ class PuppeteerHelper {
             // 连接失败重新创建新的浏览器实例
             browser = await this._generateBrowser(tmp)
         }
-        // 增加打开页面次数
-        this.browserOpenPageNumber[tmp]++
         return browser
     }
 
