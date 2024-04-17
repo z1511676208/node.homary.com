@@ -2,7 +2,7 @@
  * @Author       : JHao
  * @Date         : 2023-08-31 15:13:28
  * @LastEditors  : JHao
- * @LastEditTime : 2024-04-16 13:42:10
+ * @LastEditTime : 2024-04-17 14:16:29
  */
 const puppeteer = require('puppeteer')
 const { STATUS_CODE } = require('@/lib/constant')
@@ -55,6 +55,7 @@ class PuppeteerHelper {
         // puppeteer 配置
         this.puppeteerConfig = {
             headless: 'new',
+            protocolTimeout: 300 * 1000,
             defaultViewport: {
                 width: 650,
                 height: 3000
@@ -289,6 +290,7 @@ class PuppeteerHelper {
             if (key.includes('row-list')) {
                 const handler = async function () {
                     const elements = await page.$$(`${key} .row-item`)
+                    let isError = false
                     for (let i = 0; i < elements.length; i++) {
                         try {
                             const currentId = imagesListMap[key]['children'][i].id
@@ -298,7 +300,10 @@ class PuppeteerHelper {
                             })
                             imagesListMap[key]['children'][i].img = buffer
                         } catch (error) {
-                            reportEmailError(`截图异常 => ${error.toString()}`, key, {})
+                            if (!isError) {
+                                isError = true
+                                reportEmailError(`截图异常 => ${error.toString()}`, key, {})
+                            }
                             const currentId = imagesListMap[key]['children'][i].id
                             this.errorImageIdMap[key] = [...(this.errorImageIdMap[key] || []), currentId]
                         }
