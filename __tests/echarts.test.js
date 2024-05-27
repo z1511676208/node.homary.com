@@ -1,5 +1,13 @@
 const request = require('../request/supertest')
 
+// 测试用例链接：
+/**
+http://localhost:3002/chart/linechart?option={%22xAxis%22:{%22data%22:[%2203-04~03-10%22],%22show%22:true,%22axisLabel%22:{%22interval%22:0,%22rotate%22:45}},%22yAxis%22:{%22show%22:true},%22legend%22:{%22show%22:true},%22series%22:[{%22data%22:[{%22value%22:0.99,%22label%22:{%22formatter%22:%2212%%22}}],%22symbolSize%22:5,%22symbol%22:%22circle%22,%22type%22:%22line%22,%22label%22:{%22show%22:true,%22color%22:%22red%22}}],%22width%22:300,%22height%22:150,%22top%22:40,%22scale%22:1.1}
+
+http://localhost:3002/chart/linechart?option={%22xAxis%22:{%22data%22:[%2203-04~03-10%22],%22show%22:true,%22axisLabel%22:{%22interval%22:0,%22rotate%22:45}},%22yAxis%22:{%22show%22:true},%22legend%22:{%22show%22:true},%22series%22:[{%22data%22:[{%22value%22:0.99,%22label%22:{%22formatter%22:%2212%%22}}],%22symbolSize%22:5,%22symbol%22:%22circle%22,%22type%22:%22line%22,%22label%22:{%22show%22:true,%22color%22:%22red%22}}],%22width%22:300,%22height%22:150,%22top%22:40,%22scale%22:1.1}
+
+http://localhost:3002/chart/linechart?option={%22xAxis%22:{%22data%22:[%22A%22,%22B%22,%22C%22,%22D%22,%22E%22],%22show%22:false},%22yAxis%22:{%22show%22:false},%22series%22:[{%22data%22:[10,22,28,23,19],%22type%22:%22line%22,%22label%22:{%22show%22:true}},{%22data%22:[10,10,10,10,10],%22type%22:%22line%22,%22label%22:{%22show%22:true}}],%22width%22:300,%22height%22:150}
+ */
 test('测试生成 charts 图片', async () => {
   const queryParams = {
     option: '{"xAxis":{"data":["A","B","C","D","E"],"show":false},"yAxis":{"show":false},"series":[{"data":[10,22,28,23,19],"type":"line","label":{"show":true}},{"data":[10,10,10,10,10],"type":"line","label":{"show":true}}],"width":300,"height":150}'

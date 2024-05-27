@@ -10,19 +10,14 @@ const { STATUS_CODE } = require('../lib/constant')
 const { Result } = require('../lib/util')
 const { isObject } = require('../service/screenshot/utils')
 const { handleCharts } = require('../service/linechart')
-const { handleEncodeSearchKey } = require('@/lib/handleQueryURL')
+const { handleQueryParams } = require('@/lib/handleQueryURL')
 
 const router = new Router()
 
 // 生成echarts图
 router.get('/chart/linechart', async ctx => {
     const urlParams = ctx.query || ctx.request.query || {}
-    let params = ""
-    try {
-        params = urlParams?.option ? JSON.parse(decodeURIComponent(handleEncodeSearchKey(urlParams.option))) : {}
-    } catch (e) {
-        console.log('decodeURIComponent',e)
-    }
+    let params = handleQueryParams(urlParams)
 
     if (!isObject(params)) {
         const { code, msg } = new Result(STATUS_CODE.DEFECT).handle()
@@ -45,51 +40,5 @@ router.get('/chart/linechart', async ctx => {
     }
 })
 
-/**
- * 生成echarts图
- * rid 随机ID
- * option echarts options
- */
-router.get('/chart/linechart/:rid/:option', async ctx => {
-    const paramRId = ctx.params.rid || ''
-    const optionParams = ctx.params.option || ''
-    let base64Params = ''
-
-    if (optionParams && typeof optionParams === 'string') {
-        const regex = /\.png$/
-        let base64Str = optionParams
-        if (regex.test(optionParams)) {
-            base64Str = optionParams.split('.png')[0]
-        }
-        if (base64Str) {
-            try {
-                const buff = Buffer.from(base64Str, 'base64')
-                base64Params = JSON.parse(buff.toString('utf-8'))
-            } catch (e) {
-                console.log('optionsBase64', e)
-            }
-        }
-    }
-
-    if (!isObject(base64Params)) {
-        const { code, msg } = new Result(STATUS_CODE.DEFECT).handle()
-        ctx.fail(msg, code)
-        return
-    }
-
-    try {
-        const result = await handleCharts(base64Params)
-        if (+result.code === STATUS_CODE.SUCCESS) {
-            ctx.type = 'image/png'
-            ctx.status = 200
-            ctx.body = result.data
-        } else {
-            ctx.fail(result.msg, result.code)
-        }
-    } catch (error) {
-        const { code, msg } = new Result(STATUS_CODE.ABNORMAL).handle()
-        ctx.fail(msg, code)
-    }
-})
 
 module.exports = router
