@@ -2,7 +2,7 @@
  * @Author       : JHao
  * @Date         : 2023-08-31 15:13:28
  * @LastEditors  : JHao
- * @LastEditTime : 2024-04-17 14:16:29
+ * @LastEditTime : 2026-09-24 14:33:36
  */
 const puppeteer = require('puppeteer')
 const { STATUS_CODE } = require('@/lib/constant')
@@ -67,7 +67,9 @@ class PuppeteerHelper {
                 '--no-first-run', // 没有设置首页。在启动的时候，就会打开一个空白页面。
                 '--no-sandbox', // 沙盒模式
                 '--no-zygote',
-                '--single-process' // 单进程运行
+                '--single-process', // 单进程运行
+                // Chromium 会把 http 自动升级为 https（307 Internal Redirect），内网邮件页仅支持 http
+                '--disable-features=HttpsUpgrades,HttpsFirstBalancedModeAutoEnable'
             ]
         }
 
